@@ -7,9 +7,10 @@ class Register_steps(StatesGroup):
 
 
 #Выбор смены и этапа работ
-class Shift_steps(StatesGroup):
+class Construction_projects_steps(StatesGroup):
     shift = State() #смена
     stage = State() #этап работ
+    project = State() #Объект
 
 
 #Отчет по этапу "Подготовительные работы"

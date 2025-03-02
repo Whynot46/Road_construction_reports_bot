@@ -23,7 +23,7 @@ async def start_loop(message: Message, state = FSMContext):
     
 
 @router.message(Register_steps.fullname)
-async def fullname_loop(message: Message, state: FSMContext):
+async def registration(message: Message, state: FSMContext):
     await state.update_data(fullname=message.text)
     fullname = await state.get_data()
     if await yadisk.is_user_in_reference_table(fullname):
@@ -32,9 +32,25 @@ async def fullname_loop(message: Message, state: FSMContext):
             
         
 @router.message(F.text == "Заполнить отчеты")  
-async def find_track(message: Message, bot: Bot, state = FSMContext):  
+async def chouse_shift(message: Message, state = FSMContext):  
+    await state.set_state(Construction_projects_steps.shift)
     await message.answer("Выберите смену", reply_markup=kb.get_shift_keyboard())
-    
+
+
+@router.message(Construction_projects_steps.shift)
+async def chouse_stage(message: Message, state: FSMContext):
+    await state.update_data(shift=message.text)
+    await state.set_state(Construction_projects_steps.stage)
+    await message.answer("Выберите этап работ'", reply_markup=kb.get_stage_keyboard())
+
+
+@router.message(Construction_projects_steps.shift)
+async def chouse_project(message: Message, state: FSMContext):
+    await state.update_data(stage=message.text)
+    await state.set_state(Construction_projects_steps.project)
+    await message.answer("Выберите объект", reply_markup=kb.get_project_keyboard())
+    shift, stage = await state.get_data()
+
 
 @router.callback_query(F.data)
 async def track_callback(callback: CallbackQuery, bot: Bot):

@@ -1,14 +1,23 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 import bot.database.db as db
+import asyncio
 
-def get_main_menu_keyboard():
+async def get_main_menu_keyboard():
     main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[
         [KeyboardButton(text='Заполнить отчеты')]
         ], resize_keyboard=True)
     return main_menu_keyboard
 
 
-def get_shift_keyboard():
+async def get_report_keyboard():
+    main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text='Отправить')],
+        [KeyboardButton(text='Заполнить заново')]
+        ], resize_keyboard=True)
+    return main_menu_keyboard
+
+
+async def get_shift_keyboard():
     shift_keyboard = ReplyKeyboardMarkup(keyboard=[
         [KeyboardButton(text='День'), 
         KeyboardButton(text='Ночь')]
@@ -16,7 +25,7 @@ def get_shift_keyboard():
     return shift_keyboard
 
 
-def get_stage_keyboard():
+async def get_stage_keyboard():
     stage_keyboard = ReplyKeyboardMarkup(keyboard=[
         [KeyboardButton(text='Подготовительные работы')],
         [KeyboardButton(text='Земляные работы')],
@@ -28,8 +37,8 @@ def get_stage_keyboard():
     return stage_keyboard
 
 
-def get_project_keyboard():
-    projects = db.get_construction_projects()
+async def get_project_keyboard():
+    projects = await db.get_construction_projects()
     if len(projects)>0:
         projects_buttons = []
         for project in projects:
@@ -42,6 +51,9 @@ def get_project_keyboard():
         [KeyboardButton(text='В справочнике нет объектов')]
         ], resize_keyboard=True)
 
+
+async def remove_keyboard():
+    return ReplyKeyboardRemove()
 
 # download_keyboard = track_keyboard = InlineKeyboardMarkup(inline_keyboard=[
 #         [InlineKeyboardButton(text="download_keyboard", callback_data=f"was_download")]

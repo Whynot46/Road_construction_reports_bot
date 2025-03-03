@@ -1,6 +1,6 @@
 import aiosqlite
 from bot.config import Config
-
+from datetime import datetime
 
 # Соединения с базой данных
 db_connection = None
@@ -48,6 +48,22 @@ async def is_old(user_id):
     return bool(result)
 
 
+async def is_active(user_id):
+    global db_connection
+    cursor = await db_connection.execute("SELECT 1 FROM Users WHERE user_id = ? AND is_active = 1", (user_id,))
+    result = await cursor.fetchone()
+    return bool(result)
+
+
+async def add_photo_links(report_name, photo_links):
+    global db_connection
+    await db_connection.execute(f'''
+                                INSERT INTO {report_name} ( photo_links)
+                                VALUES (?)
+                                ''', ( photo_links))
+    await db_connection.commit()
+
+
 async def get_report(report_id):
     global db_connection
     cursor = await db_connection.execute("SELECT * FROM reports WHERE id = ?", (report_id,))
@@ -69,18 +85,19 @@ async def get_preparatory_reports():
     return await cursor.fetchall()
 
 
-async def get_preparatory_report_by_id(report_id):
+async def get_preparatory_report(report_id):
     global db_connection
     cursor = await db_connection.execute("SELECT * FROM preparatory_reports WHERE id = ?", (report_id,))
     return await cursor.fetchone()
 
 
-async def add_preparatory_report(user_id, create_datetime, is_uploaded_to_cloud=False, upload_datetime=None,
+async def add_preparatory_report(user_id, is_uploaded_to_cloud=False, upload_datetime=None,
                                 route_breakdown=None, clearing_way=None, water_disposal=None, water_disposal_scope=None,
                                 removal_utility_networks=None, removal_utility_networks_scope=None,
                                 temporary_construction=None, quarries_construction=None, quarries_construction_quantity=None,
                                 cutting_asphalt_area=None, other_works=None, photo_links=None):
     global db_connection
+    create_datetime = datetime.now().strftime("%Y-%m-%d %H:%M")
     await db_connection.execute('''
         INSERT INTO preparatory_reports (
             user_id, create_datetime, is_uploaded_to_cloud, upload_datetime, route_breakdown, clearing_way,
@@ -127,7 +144,7 @@ async def get_artificial_structures_reports():
     return await cursor.fetchall()
 
 
-async def get_artificial_structures_report_by_id(report_id):
+async def get_artificial_structures_report(report_id):
     global db_connection
     cursor = await db_connection.execute("SELECT * FROM artificial_structures_reports WHERE id = ?", (report_id,))
     return await cursor.fetchone()

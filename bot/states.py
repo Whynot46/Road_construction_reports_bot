@@ -85,6 +85,7 @@ class Road_devices_steps(Construction_projects_steps):
     photo_links = State() #Ссылки на фото.
     is_ok = State()
 
+
 #Отчет по расходу материала на объекте
 class Material_consumption_report_steps(Construction_projects_steps):
     pgs_quantity = State() #ПГС. Укажите количество тонн.

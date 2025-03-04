@@ -9,12 +9,33 @@ async def get_main_menu_keyboard():
     return main_menu_keyboard
 
 
+async def get_start_keyboard():
+    start_keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text='Старт')]
+        ], resize_keyboard=True)
+    return start_keyboard
+
+
 async def get_report_keyboard():
-    main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[
+    report_keyboard = ReplyKeyboardMarkup(keyboard=[
         [KeyboardButton(text='Отправить')],
         [KeyboardButton(text='Заполнить заново')]
         ], resize_keyboard=True)
-    return main_menu_keyboard
+    return report_keyboard
+
+
+async def get_skip_keyboard():
+    skip_keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text='Пропустить')]
+        ], resize_keyboard=True)
+    return skip_keyboard
+
+
+async def get_none_work_keyboard():
+    none_work_keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(text='Работы не производились')]
+        ], resize_keyboard=True)
+    return none_work_keyboard
 
 
 async def get_shift_keyboard():

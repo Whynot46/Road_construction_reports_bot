@@ -10,6 +10,12 @@ async def populate_database():
             INSERT INTO users (user_id, firstname, middlename, lastname, is_active)
             VALUES (?, ?, ?, ?, ?)
         ''', (7348838870, "Алексей", "Дмитриевич", "Пахалев", True))
+
+        await db.execute('''
+            INSERT INTO admins (user_id, email)
+            VALUES (?, ?)
+        ''', (7348838870, "test@gmail.com"))
+
         await db.execute('''
             INSERT INTO construction_projects (name, is_active)
             VALUES (?, ?)

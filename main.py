@@ -29,6 +29,7 @@ async def main():
     scheduler.add_job(
         func=update_users,
         trigger=CronTrigger(hour="*", minute=0, timezone="Europe/Moscow"),  # Каждый час в 0 минут
+
         id="update_users"
     )
     scheduler.add_job(

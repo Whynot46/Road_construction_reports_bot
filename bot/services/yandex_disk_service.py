@@ -3,11 +3,11 @@ import yadisk
 import pandas as pd
 from io import BytesIO
 from os import remove, path
-# from bot.config import Config
+from bot.config import Config
 
 
-# yadisk_client = yadisk.YaDisk(token=Config.YANDEX_DISK_TOKEN)
-yadisk_client = yadisk.YaDisk(token="y0__xCFqb37BxijzTUg0au0shInwu3lP71gj2pj3MZzhSV--NklNQ")
+yadisk_client = yadisk.YaDisk(token=Config.YANDEX_DISK_TOKEN)
+# yadisk_client = yadisk.YaDisk(token="y0__xCFqb37BxijzTUg0au0shInwu3lP71gj2pj3MZzhSV--NklNQ")
 
 
 async def download_file(file_path):
@@ -62,14 +62,19 @@ async def update_projects():
     
 
 async def upload_file(file_name):
-    local_file_path = f"./media/{file_name}"
+    local_file_path = f"bot/media/{file_name}"
     remote_file_path = f"/media/{file_name}"
 
     try:
         if not path.exists(local_file_path):
             print(f"Файл {local_file_path} не найден локально.")
-            return False
         yadisk_client.upload(local_file_path, remote_file_path)
+        yadisk_client.publish(remote_file_path)
+        file_info = yadisk_client.get_meta(remote_file_path)
+        public_url = file_info.public_url
+        remove(local_file_path)
+
+        return public_url
 
     except yadisk.exceptions.PathNotFoundError:
         print(f"Указанный путь на Яндекс.Диске не найден: {remote_file_path}")

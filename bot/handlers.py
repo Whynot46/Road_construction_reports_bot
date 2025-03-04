@@ -192,25 +192,16 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
     await state.update_data(photo_links=data["photo_links"])
 
     if len(data["photo_links"]) >= 5:
-        asyncio.create_task(download_photos("Preparatory", data["photo_links"], message.from_user.id, bot))
-        await state.update_data(photo_links=[])
+        photo_file_names = await download_photos("Preparatory", data["photo_links"], message.from_user.id, bot)
+        photo_file_names_str = "./media\n".join(photo_file_names)
+        await state.update_data(photo_links=photo_file_names_str)
+
+        files_url = []
+        for file_name in photo_file_names:
+            file_url = await yadisk.upload_file(file_name)
+            files_url.append(file_url)
+        files_url_str = "\n".join(photo_file_names)
         
-        # preparatory_data = await state.get_data()
-        # await db.add_preparatory_report(
-        #     user_id=message.from_user.id,
-        #     route_breakdown=preparatory_data["route_breakdown"],
-        #     clearing_way=preparatory_data["clearing_way"],
-        #     water_disposal=preparatory_data["water_disposal"],
-        #     water_disposal_scope=preparatory_data["water_disposal_scope"],
-        #     removal_utility_networks=preparatory_data["removal_utility_networks"],
-        #     removal_utility_networks_scope=preparatory_data["removal_utility_networks_scope"],
-        #     temporary_construction=preparatory_data["temporary_construction"],
-        #     quarries_construction=preparatory_data["quarries_construction"],
-        #     quarries_construction_quantity=preparatory_data["quarries_construction_quantity"],
-        #     cutting_asphalt_area=preparatory_data["cutting_asphalt_area"],
-        #     other_works=preparatory_data["other_works"],
-        #     photo_links="Downloading"
-        # )
         report_data = await state.get_data()
         await state.set_state(Preparatory_steps.is_ok)
         await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
@@ -227,10 +218,8 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
                         f"Устройство карьеров и резервов. Количество в тоннах: {report_data['quarries_construction_quantity']}\n"
                         f"Срезка асфальтобетонного покрытия методом холодного фрезерования. Площадь в м²: {report_data['cutting_asphalt_area']}\n"
                         f"Другие работы: Площадь в м²: {report_data['other_works']}\n"
-                        f"Ссылки на фото: {report_data['photo_links']}\n"
+                        f"Ссылки на фото: {files_url_str}\n"
                         , reply_markup= await kb.get_report_keyboard())
-    # else:
-    #     await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
 
 
 @router.message(Preparatory_steps.is_ok)
@@ -334,8 +323,15 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
     await state.update_data(photo_links=data["photo_links"])
 
     if len(data["photo_links"]) >= 5:
-        asyncio.create_task(download_photos("Earthworks", data["photo_links"], message.from_user.id, bot))
-        await state.update_data(photo_links=[])
+        photo_file_names = await download_photos("Earthworks", data["photo_links"], message.from_user.id, bot)
+        photo_file_names_str = "./media\n".join(photo_file_names)
+        await state.update_data(photo_links=photo_file_names_str)
+
+        files_url = []
+        for file_name in photo_file_names:
+            file_url = await yadisk.upload_file(file_name)
+            files_url.append(file_url)
+        files_url_str = "\n".join(photo_file_names)
 
         report_data = await state.get_data()
         await state.set_state(Earthworks_steps.is_ok)
@@ -350,7 +346,7 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
                         f"Уплотнение грунта. Количество в м3: {report_data['soil_compaction_quantity']}\n"
                         f"Окончательная планировка. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['final_layout']}\n"
                         f"Окончательная планировка. Количество в м2: {report_data['final_layout_quantity']}\n"
-                        f"Ссылки на фото: {report_data['photo_links']}\n"
+                        f"Ссылки на фото: {files_url_str}\n"
                         , reply_markup= await kb.get_report_keyboard())
         
         
@@ -396,8 +392,15 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
     await state.update_data(photo_links=data["photo_links"])
 
     if len(data["photo_links"]) >= 5:
-        asyncio.create_task(download_photos("Artificial_structures", data["photo_links"], message.from_user.id, bot))
-        await state.update_data(photo_links=[])
+        photo_file_names = await download_photos("Artificial_structures", data["photo_links"], message.from_user.id, bot)
+        photo_file_names_str = "./media\n".join(photo_file_names)
+        await state.update_data(photo_links=photo_file_names_str)
+
+        files_url = []
+        for file_name in photo_file_names:
+            file_url = await yadisk.upload_file(file_name)
+            files_url.append(file_url)
+        files_url_str = "\n".join(photo_file_names)
 
         report_data = await state.get_data()
         await state.set_state(Artificial_structures_steps.is_ok)
@@ -406,7 +409,7 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
                         f"Объект: {report_data['project']}\n"
                         f"Вид работ: {report_data['work_type']}\n"
                         f"Объем работ: {report_data['work_scope']}\n"
-                        f"Ссылки на фото: {report_data['photo_links']}\n"
+                        f"Ссылки на фото: {files_url_str}\n"
                         , reply_markup= await kb.get_report_keyboard())
         
         
@@ -503,8 +506,15 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
     await state.update_data(photo_links=data["photo_links"])
 
     if len(data["photo_links"]) >= 5:
-        asyncio.create_task(download_photos("Road_clothing", data["photo_links"], message.from_user.id, bot))
-        await state.update_data(photo_links=[])
+        photo_file_names = await download_photos("Road_clothing", data["photo_links"], message.from_user.id, bot)
+        photo_file_names_str = "./media\n".join(photo_file_names)
+        await state.update_data(photo_links=photo_file_names_str)
+
+        files_url = []
+        for file_name in photo_file_names:
+            file_url = await yadisk.upload_file(file_name)
+            files_url.append(file_url)
+        files_url_str = "\n".join(photo_file_names)
 
         report_data = await state.get_data()
         await state.set_state(Road_clothing_steps.is_ok)
@@ -517,7 +527,7 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
                         f"Дополнительный слой из ПГС. Количество площадь/толщина.: {report_data['additional_layer_area']}\n"
                         f"Устройство основания из щебня. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['foundation_construction']}\n"
                         f"Устройство основания из щебня. Количество площадь/толщина.: {report_data['foundation_construction_area']}\n"
-                        f"Ссылки на фото: {report_data['photo_links']}\n"
+                        f"Ссылки на фото: {files_url_str}\n"
                         , reply_markup= await kb.get_report_keyboard())
         
         
@@ -637,8 +647,15 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
     await state.update_data(photo_links=data["photo_links"])
 
     if len(data["photo_links"]) >= 5:
-        asyncio.create_task(download_photos("Asphalt", data["photo_links"], message.from_user.id, bot))
-        await state.update_data(photo_links=[])
+        photo_file_names = await download_photos("Asphalt", data["photo_links"], message.from_user.id, bot)
+        photo_file_names_str = "./media\n".join(photo_file_names)
+        await state.update_data(photo_links=photo_file_names_str)
+
+        files_url = []
+        for file_name in photo_file_names:
+            file_url = await yadisk.upload_file(file_name)
+            files_url.append(file_url)
+        files_url_str = "\n".join(photo_file_names)
 
         report_data = await state.get_data()
         await state.set_state(Asphalt_steps.is_ok)
@@ -653,7 +670,7 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
                         f"Укладка асфальтобетонной смеси. Нижний слой. Количество площадь/толщина: {report_data['asphalt_mixture_lower_area']}\n"
                         f"Укладка асфальтобетонной смеси. Верхний слой. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['asphalt_mixture_upper']}\n"
                         f"Укладка асфальтобетонной смеси. Верхний слой. Количество площадь/толщина: {report_data['asphalt_mixture_upper_area']}\n"
-                        f"Ссылки на фото: {report_data['photo_links']}\n"
+                        f"Ссылки на фото: {files_url_str}\n"
                         , reply_markup= await kb.get_report_keyboard())
         
         
@@ -714,8 +731,15 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
     await state.update_data(photo_links=data["photo_links"])
 
     if len(data["photo_links"]) >= 5:
-        asyncio.create_task(download_photos("Asphalt", data["photo_links"], message.from_user.id, bot))
-        await state.update_data(photo_links=[])
+        photo_file_names = await download_photos("Asphalt", data["photo_links"], message.from_user.id, bot)
+        photo_file_names_str = "./media\n".join(photo_file_names)
+        await state.update_data(photo_links=photo_file_names_str)
+
+        files_url = []
+        for file_name in photo_file_names:
+            file_url = await yadisk.upload_file(file_name)
+            files_url.append(file_url)
+        files_url_str = "\n".join(photo_file_names)
 
         report_data = await state.get_data()
         await state.set_state(Road_devices_steps.is_ok)
@@ -725,7 +749,7 @@ async def set_other_works(message: Message, state: FSMContext, bot: Bot):
                         f"Нумерация  и количество знаков, установленных за сегодня, в формате 3.24 - 5: {report_data['characters_number']}\n"
                         f"Подстилающий слой из песка. Количество площадь/толщина: {report_data['signal_posts_number']}\n"
                         f"Другая работа с объемом по обстановке дороги: {report_data['other_works']}\n"
-                        f"Ссылки на фото: {report_data['photo_links']}\n"
+                        f"Ссылки на фото: {files_url_str}\n"
                         , reply_markup= await kb.get_report_keyboard())
         
         

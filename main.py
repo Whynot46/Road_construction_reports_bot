@@ -62,7 +62,6 @@ async def main():
         if hasattr(dp, '_polling') and dp._polling:
             await dp.stop_polling()
 
-
 if __name__ == "__main__":
     try:
         print('Bot is running...')

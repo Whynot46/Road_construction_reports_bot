@@ -148,27 +148,45 @@ async def set_clearing_way(message: Message, state: FSMContext, message_text : s
 @router.message(Preparatory_steps.water_disposal)
 @handle_none_work
 async def set_water_disposal_scope(message: Message, state: FSMContext, message_text : str):
-    await state.update_data(water_disposal=message_text)
-    await state.set_state(Preparatory_steps.water_disposal_scope)
-    await message.answer("Водоотведение и временное водопонижение. Укажите объем работ.", reply_markup= await kb.get_none_work_keyboard())
+    if message_text == "":
+        await state.update_data(water_disposal=message_text)
+        await state.update_data(water_disposal_scope=message_text)
+        await state.set_state(Preparatory_steps.removal_utility_networks)
+        await message.answer("Вынос инженерных сетей и снос зданий и сооружений. Укажите вид работ.", reply_markup= await kb.get_none_work_keyboard())
+    else:
+        await state.update_data(water_disposal=message_text)
+        await state.set_state(Preparatory_steps.water_disposal_scope)
+        await message.answer("Водоотведение и временное водопонижение. Укажите объем работ.", reply_markup= await kb.get_none_work_keyboard())
     
 
 @exception_decorator 
 @router.message(Preparatory_steps.water_disposal_scope)
 @handle_none_work
 async def set_water_disposal_scope(message: Message, state: FSMContext, message_text : str):
-    await state.update_data(water_disposal_scope=message_text)
-    await state.set_state(Preparatory_steps.removal_utility_networks)
-    await message.answer("Вынос инженерных сетей и снос зданий и сооружений. Укажите вид работ.", reply_markup= await kb.get_none_work_keyboard())
+    if message_text == "":
+        await state.update_data(water_disposal=message_text)
+        await state.update_data(water_disposal_scope=message_text)
+        await state.set_state(Preparatory_steps.temporary_construction)
+        await message.answer("Устройство временных автодорог и объездов. Укажите количество км.", reply_markup= await kb.get_none_work_keyboard())
+    else:
+        await state.update_data(water_disposal_scope=message_text)
+        await state.set_state(Preparatory_steps.removal_utility_networks)
+        await message.answer("Вынос инженерных сетей и снос зданий и сооружений. Укажите вид работ.", reply_markup= await kb.get_none_work_keyboard())
     
 
 @exception_decorator 
 @router.message(Preparatory_steps.removal_utility_networks)
 @handle_none_work
 async def set_removal_utility_networks(message: Message, state: FSMContext, message_text : str):
-    await state.update_data(removal_utility_networks=message_text)
-    await state.set_state(Preparatory_steps.removal_utility_networks_scope)
-    await message.answer("Вынос инженерных сетей и снос зданий и сооружений. Укажите объем работ.", reply_markup= await kb.get_none_work_keyboard())
+    if message_text == "":
+        await state.update_data(removal_utility_networks=message_text)
+        await state.update_data(removal_utility_networks_scope=message_text)
+        await state.set_state(Preparatory_steps.temporary_construction)
+        await message.answer("Устройство временных автодорог и объездов. Укажите количество км.", reply_markup= await kb.get_none_work_keyboard())
+    else:
+        await state.update_data(removal_utility_networks=message_text)
+        await state.set_state(Preparatory_steps.removal_utility_networks_scope)
+        await message.answer("Вынос инженерных сетей и снос зданий и сооружений. Укажите объем работ.", reply_markup= await kb.get_none_work_keyboard())
     
 
 @exception_decorator  
@@ -197,9 +215,15 @@ async def set_temporary_construction(message: Message, state: FSMContext, messag
 @router.message(Preparatory_steps.quarries_construction)
 @handle_none_work
 async def set_quarries_construction(message: Message, state: FSMContext, message_text : str):
-    await state.update_data(quarries_construction=message_text)
-    await state.set_state(Preparatory_steps.quarries_construction_quantity)
-    await message.answer("Устройство карьеров и резервов. Укажите количество в тоннах.", reply_markup= await kb.get_none_work_keyboard())
+    if message_text == "":
+        await state.update_data(quarries_construction=message_text)
+        await state.update_data(quarries_construction_quantity=message_text)
+        await state.set_state(Preparatory_steps.cutting_asphalt_area)
+        await message.answer("Срезка асфальтобетонного покрытия методом холодного фрезерования. Укажите площадь в м².", reply_markup= await kb.get_none_work_keyboard())
+    else:
+        await state.update_data(quarries_construction=message_text)
+        await state.set_state(Preparatory_steps.quarries_construction_quantity)
+        await message.answer("Устройство карьеров и резервов. Укажите количество в тоннах.", reply_markup= await kb.get_none_work_keyboard())
     
 
 @exception_decorator
@@ -213,6 +237,7 @@ async def set_quarries_construction_quantity(message: Message, state: FSMContext
     else:
         await state.set_state(Preparatory_steps.quarries_construction_quantity)
         await message.answer("Необходимо указать число!", reply_markup= await kb.get_none_work_keyboard())
+
 
 @exception_decorator
 @router.message(Preparatory_steps.cutting_asphalt_area)
@@ -262,6 +287,7 @@ async def set_preparatory_photo(message: Message, state: FSMContext, bot: Bot):
         files_url = []
         for file_name in photo_file_names:
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
+            await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
         files_url_str = "\n".join(files_url)
 
@@ -321,9 +347,15 @@ async def set_detailed_breakdown(message: Message, state: FSMContext, message_te
 @router.message(Earthworks_steps.excavations_development)
 @handle_none_work
 async def set_excavations_development(message: Message, state: FSMContext, message_text : str):
-    await state.update_data(excavations_development=message_text)
-    await state.set_state(Earthworks_steps.excavations_development_quantity)
-    await message.answer("Разработка выемок и возведение насыпей. Укажите количество в м3.", reply_markup= await kb.get_none_work_keyboard())
+    if message_text == "":
+        await state.update_data(excavations_development=message_text)
+        await state.update_data(excavations_development_quantity=message_text)
+        await state.set_state(Earthworks_steps.soil_compaction)
+        await message.answer("Уплотнение грунта. Укажите с какого ПК по какой ПК в формате: 1+00-2+00", reply_markup= await kb.get_none_work_keyboard())
+    else:
+        await state.update_data(excavations_development=message_text)
+        await state.set_state(Earthworks_steps.excavations_development_quantity)
+        await message.answer("Разработка выемок и возведение насыпей. Укажите количество в м3.", reply_markup= await kb.get_none_work_keyboard())
     
 
 @exception_decorator
@@ -369,13 +401,19 @@ async def set_soil_compaction_quantity(message: Message, state: FSMContext, mess
 @router.message(Earthworks_steps.final_layout)
 @handle_none_work
 async def set_final_layout(message: Message, state: FSMContext, message_text : str):
-    if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+    if message_text == "":
         await state.update_data(final_layout=message_text)
-        await state.set_state(Earthworks_steps.final_layout_quantity)
-        await message.answer("Окончательная планировка. Укажите количество в м2.", reply_markup= await kb.get_none_work_keyboard())
+        await state.update_data(final_layout_quantity=message_text)
+        await state.set_state(Earthworks_steps.photo_links)
+        await message.answer("Прикрепить 5 четких фото по этому виду работ", reply_markup= await kb.remove_keyboard())
     else:
-        await state.set_state(Earthworks_steps.final_layout)
-        await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
+        if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+            await state.update_data(final_layout=message_text)
+            await state.set_state(Earthworks_steps.final_layout_quantity)
+            await message.answer("Окончательная планировка. Укажите количество в м2.", reply_markup= await kb.get_none_work_keyboard())
+        else:
+            await state.set_state(Earthworks_steps.final_layout)
+            await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
         
 
 @exception_decorator 
@@ -414,6 +452,7 @@ async def set_earthworks_photo(message: Message, state: FSMContext, bot: Bot):
         files_url = []
         for file_name in photo_file_names:
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
+            await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
         files_url_str = "\n".join(files_url)
 
@@ -494,6 +533,7 @@ async def set_artificial_structures_photo(message: Message, state: FSMContext, b
         files_url = []
         for file_name in photo_file_names:
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
+            await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
         files_url_str = "\n".join(files_url)
 
@@ -557,13 +597,19 @@ async def set_underlying_layer_area(message: Message, state: FSMContext, message
 @router.message(Road_clothing_steps.additional_layer)
 @handle_none_work
 async def set_additional_layer(message: Message, state: FSMContext, message_text : str):
-    if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+    if message_text == "":
         await state.update_data(additional_layer=message_text)
-        await state.set_state(Road_clothing_steps.additional_layer_area)
-        await message.answer("Дополнительный слой из ПГС. Укажите количество площадь/толщина.", reply_markup= await kb.get_none_work_keyboard())
+        await state.update_data(additional_layer_area=message_text)
+        await state.set_state(Road_clothing_steps.foundation_construction)
+        await message.answer("Устройство основания из щебня. Укажите с какого ПК по какой ПК в формате: 1+00-2+00.", reply_markup= await kb.get_none_work_keyboard())
     else:
-        await state.set_state(Road_clothing_steps.additional_layer)
-        await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
+        if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+            await state.update_data(additional_layer=message_text)
+            await state.set_state(Road_clothing_steps.additional_layer_area)
+            await message.answer("Дополнительный слой из ПГС. Укажите количество площадь/толщина.", reply_markup= await kb.get_none_work_keyboard())
+        else:
+            await state.set_state(Road_clothing_steps.additional_layer)
+            await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
     
 
 @exception_decorator   
@@ -583,13 +629,19 @@ async def set_additional_layer_area(message: Message, state: FSMContext, message
 @router.message(Road_clothing_steps.foundation_construction)
 @handle_none_work
 async def set_foundation_construction(message: Message, state: FSMContext, message_text : str):
-    if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+    if message_text == "":
         await state.update_data(foundation_construction=message_text)
-        await state.set_state(Road_clothing_steps.foundation_construction_area)
-        await message.answer("Устройство основания из щебня. Укажите количество площадь/толщина.", reply_markup= await kb.get_none_work_keyboard())
+        await state.update_data(foundation_construction_area=message_text)
+        await state.set_state(Road_clothing_steps.photo_links)
+        await message.answer("Прикрепить 5 четких фото по этому виду работ", reply_markup= await kb.remove_keyboard())
     else:
-        await state.set_state(Road_clothing_steps.foundation_construction)
-        await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
+        if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+            await state.update_data(foundation_construction=message_text)
+            await state.set_state(Road_clothing_steps.foundation_construction_area)
+            await message.answer("Устройство основания из щебня. Укажите количество площадь/толщина.", reply_markup= await kb.get_none_work_keyboard())
+        else:
+            await state.set_state(Road_clothing_steps.foundation_construction)
+            await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
 
 
 @exception_decorator
@@ -628,6 +680,7 @@ async def set_road_clothing_photo(message: Message, state: FSMContext, bot: Bot)
         files_url = []
         for file_name in photo_file_names:
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
+            await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
         files_url_str = "\n".join(files_url)
 
@@ -694,13 +747,19 @@ async def set_cleaning_base_area(message: Message, state: FSMContext, message_te
 @router.message(Asphalt_steps.installation_primer)
 @handle_none_work
 async def set_installation_primer(message: Message, state: FSMContext, message_text : str):
-    if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+    if message_text == "":
         await state.update_data(installation_primer=message_text)
-        await state.set_state(Asphalt_steps.installation_primer_area)
-        await message.answer("Устройство битумной эмульсионной подгрунтовки. Укажите количество м2.", reply_markup= await kb.get_none_work_keyboard())
+        await state.update_data(installation_primer_area=message_text)
+        await state.set_state(Asphalt_steps.asphalt_mixture_lower)
+        await message.answer("Укладка асфальтобетонной смеси. Нижний слой. Укажите с какого ПК по какой ПК в формате: 1+00-2+00.", reply_markup= await kb.get_none_work_keyboard())
     else:
-        await state.set_state(Asphalt_steps.installation_primer)
-        await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
+        if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+            await state.update_data(installation_primer=message_text)
+            await state.set_state(Asphalt_steps.installation_primer_area)
+            await message.answer("Устройство битумной эмульсионной подгрунтовки. Укажите количество м2.", reply_markup= await kb.get_none_work_keyboard())
+        else:
+            await state.set_state(Asphalt_steps.installation_primer)
+            await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
          
 
 @exception_decorator   
@@ -720,13 +779,19 @@ async def set_installation_primer_area(message: Message, state: FSMContext, mess
 @router.message(Asphalt_steps.asphalt_mixture_lower)
 @handle_none_work
 async def set_asphalt_mixture_lower(message: Message, state: FSMContext, message_text : str):
-    if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+    if message_text == "":
         await state.update_data(asphalt_mixture_lower=message_text)
-        await state.set_state(Asphalt_steps.asphalt_mixture_lower_area)
-        await message.answer("Укладка асфальтобетонной смеси. Нижний слой. Укажите количество площадь/толщина.", reply_markup= await kb.get_none_work_keyboard())
+        await state.update_data(asphalt_mixture_lower_area=message_text)
+        await state.set_state(Asphalt_steps.asphalt_mixture_upper)
+        await message.answer("Укладка асфальтобетонной смеси. Верхний слой. Укажите с какого ПК по какой ПК в формате: 1+00-2+00.", reply_markup= await kb.get_none_work_keyboard())
     else:
-        await state.set_state(Asphalt_steps.asphalt_mixture_lower)
-        await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
+        if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+            await state.update_data(asphalt_mixture_lower=message_text)
+            await state.set_state(Asphalt_steps.asphalt_mixture_lower_area)
+            await message.answer("Укладка асфальтобетонной смеси. Нижний слой. Укажите количество площадь/толщина.", reply_markup= await kb.get_none_work_keyboard())
+        else:
+            await state.set_state(Asphalt_steps.asphalt_mixture_lower)
+            await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
     
 
 @exception_decorator    
@@ -746,13 +811,19 @@ async def set_asphalt_mixture_lower_area(message: Message, state: FSMContext, me
 @router.message(Asphalt_steps.asphalt_mixture_upper)
 @handle_none_work
 async def set_asphalt_mixture_upper(message: Message, state: FSMContext, message_text : str):
-    if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+    if message_text == "":
         await state.update_data(asphalt_mixture_upper=message_text)
-        await state.set_state(Asphalt_steps.asphalt_mixture_upper_area)
-        await message.answer("Укладка асфальтобетонной смеси. Верхний слой. Укажите количество площадь/толщина.", reply_markup= await kb.get_none_work_keyboard())
+        await state.update_data(asphalt_mixture_upper_area=message_text)
+        await state.set_state(Asphalt_steps.photo_links)
+        await message.answer("Прикрепить 5 четких фото по этому виду работ", reply_markup= await kb.remove_keyboard())
     else:
-        await state.set_state(Asphalt_steps.asphalt_mixture_upper)
-        await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
+        if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
+            await state.update_data(asphalt_mixture_upper=message_text)
+            await state.set_state(Asphalt_steps.asphalt_mixture_upper_area)
+            await message.answer("Укладка асфальтобетонной смеси. Верхний слой. Укажите количество площадь/толщина.", reply_markup= await kb.get_none_work_keyboard())
+        else:
+            await state.set_state(Asphalt_steps.asphalt_mixture_upper)
+            await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
     
 
 @exception_decorator    
@@ -791,6 +862,7 @@ async def set_asphalt_photo(message: Message, state: FSMContext, bot: Bot):
         files_url = []
         for file_name in photo_file_names:
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
+            await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
         files_url_str = "\n".join(files_url)
 
@@ -888,6 +960,7 @@ async def set_road_devices_photo(message: Message, state: FSMContext, bot: Bot):
         files_url = []
         for file_name in photo_file_names:
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
+            await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
         files_url_str = "\n".join(files_url)
 
@@ -939,9 +1012,15 @@ async def set_pgs_quantity(message: Message, state: FSMContext, message_text : s
 @router.message(Material_consumption_report_steps.crushed_stone_fraction)
 @handle_skip
 async def set_crushed_stone_fraction(message: Message, state: FSMContext, message_text : str):
-    await state.update_data(crushed_stone_fraction=message_text)
-    await state.set_state(Material_consumption_report_steps.crushed_stone_quantity)
-    await message.answer("Щебень. Укажите количество тонн.", reply_markup= await kb.get_skip_keyboard())
+    if message_text == "":
+        await state.update_data(crushed_stone_fraction=message_text)
+        await state.update_data(crushed_stone_quantity=message_text)
+        await state.set_state(Material_consumption_report_steps.side_stone)
+        await message.answer("Бортовой камень — дорожный или тротуарный?", reply_markup= await kb.get_skip_keyboard())
+    else:
+        await state.update_data(crushed_stone_fraction=message_text)
+        await state.set_state(Material_consumption_report_steps.crushed_stone_quantity)
+        await message.answer("Щебень. Укажите количество тонн.", reply_markup= await kb.get_skip_keyboard())
     
 
 @exception_decorator
@@ -961,9 +1040,15 @@ async def set_crushed_stone_quantity(message: Message, state: FSMContext, messag
 @router.message(Material_consumption_report_steps.side_stone)
 @handle_skip
 async def set_side_stone(message: Message, state: FSMContext, message_text : str):
-    await state.update_data(side_stone=message_text)
-    await state.set_state(Material_consumption_report_steps.side_stone_quantity)
-    await message.answer("Бортовой камень.  Укажите количество п.м.", reply_markup= await kb.get_skip_keyboard())
+    if message_text == "":
+        await state.update_data(side_stone=message_text)
+        await state.update_data(side_stone_quantity=message_text)
+        await state.set_state(Material_consumption_report_steps.ebdc_quantity)
+        await message.answer("Эмульсия битумная катионная (ЭБДК (Б)). Укажите количество.", reply_markup= await kb.get_skip_keyboard())
+    else:
+        await state.update_data(side_stone=message_text)
+        await state.set_state(Material_consumption_report_steps.side_stone_quantity)
+        await message.answer("Бортовой камень.  Укажите количество п.м.", reply_markup= await kb.get_skip_keyboard())
     
 
 @exception_decorator
@@ -996,9 +1081,15 @@ async def set_ebdc_quantity(message: Message, state: FSMContext, message_text : 
 @router.message(Material_consumption_report_steps.asphalt_concrete_mixture)
 @handle_skip
 async def set_asphalt_concrete_mixture(message: Message, state: FSMContext, message_text : str):
-    await state.update_data(asphalt_concrete_mixture=message_text)
-    await state.set_state(Material_consumption_report_steps.asphalt_concrete_scope)
-    await message.answer("Асфальтобетонная смесь. Укажите количество м3.", reply_markup= await kb.get_skip_keyboard())
+    if message_text == "":
+        await state.update_data(asphalt_concrete_mixture=message_text)
+        await state.update_data(asphalt_concrete_scope=message_text)
+        await state.set_state(Material_consumption_report_steps.concrete_mixture)
+        await message.answer("Бетонная смесь. Укажите марку.", reply_markup= await kb.get_skip_keyboard())
+    else:
+        await state.update_data(asphalt_concrete_mixture=message_text)
+        await state.set_state(Material_consumption_report_steps.asphalt_concrete_scope)
+        await message.answer("Асфальтобетонная смесь. Укажите количество м3.", reply_markup= await kb.get_skip_keyboard())
     
 
 @exception_decorator   
@@ -1018,9 +1109,15 @@ async def set_asphalt_concrete_scope(message: Message, state: FSMContext, messag
 @router.message(Material_consumption_report_steps.concrete_mixture)
 @handle_skip
 async def set_concrete_mixture(message: Message, state: FSMContext, message_text : str):
-    await state.update_data(concrete_mixture=message_text)
-    await state.set_state(Material_consumption_report_steps.concrete_mixture_quantity)
-    await message.answer("Бетонная смесь. Укажите количество м3.", reply_markup= await kb.get_skip_keyboard())
+    if message_text == "":
+        await state.update_data(concrete_mixture=message_text)
+        await state.update_data(concrete_mixture_quantity=message_text)
+        await state.set_state(Material_consumption_report_steps.other_material)
+        await message.answer("Другие материалы. Виды и количество?", reply_markup= await kb.get_skip_keyboard())
+    else:
+        await state.update_data(concrete_mixture=message_text)
+        await state.set_state(Material_consumption_report_steps.concrete_mixture_quantity)
+        await message.answer("Бетонная смесь. Укажите количество м3.", reply_markup= await kb.get_skip_keyboard())
     
 
 @exception_decorator  

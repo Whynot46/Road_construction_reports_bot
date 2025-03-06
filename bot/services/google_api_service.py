@@ -1,5 +1,4 @@
 import os
-import aiofiles
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.http import MediaFileUpload
@@ -8,7 +7,7 @@ import pandas as pd
 from bot.database.db import update_all_user_status, update_construction_project, mark_report_as_uploaded, get_not_uploaded_reports
 from datetime import datetime
 import httplib2
-
+from asyncio import sleep
 
 # Аутентификация через Service Account
 creds_service = ServiceAccountCredentials.from_json_keyfile_name(Config.GOOGLE_CREDENTIALS_PATH, scopes=Config.GOOGLE_SCOPES).authorize(httplib2.Http())
@@ -28,21 +27,17 @@ async def upload_file(file_path, folder_id=Config.GOOGLE_MEDIA_FOLDER_ID):
 
         file_id = file.get('id')
         file_url = f"https://drive.google.com/file/d/{file_id}/view"
-        
-        await delete_file(file_path)
 
         return file_url
     except Exception as error:
         print(f"Ошибка при загрузке файла: {error}")
 
 
-async def delete_file(file_path):
+async def delete_local_file(file_path):
     try:
-        async with aiofiles.open(file_path, 'rb') as file:
-            pass  # Файл автоматически закроется после выхода из блока with
         os.remove(file_path)
     except Exception as error:
-        print(f"Ошибка при удалении файла: {error}")
+        print(f"Ошибка при удалении файла {file_path}: {error}")
 
 
 async def upload_report(reports_data, user_fullname):
@@ -132,4 +127,8 @@ async def update_projects():
 
 
 async def upload_not_uploaded_reports():
-    pass
+    not_uploaded_reports = await get_not_uploaded_reports()
+    if not not_uploaded_reports:
+        return
+    for report in not_uploaded_reports:
+        await upload_report(report["report_data"], "БД")

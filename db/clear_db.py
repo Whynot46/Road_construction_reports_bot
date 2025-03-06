@@ -9,14 +9,13 @@ async def clear_database():
     async with aiosqlite.connect(DB_PATH) as db:
         tables = [
             "users",
+            "admins",
+            "construction_projects",
             "preparatory_reports",
             "earthworks_reports",
             "artificial_structures_reports",
             "road_clothing_reports",
             "asphalt_clothing_reports",
-            "material_consumption_reports",
-            "people_and_equipment_reports",
-            "construction_projects"
         ]
 
         for table in tables:

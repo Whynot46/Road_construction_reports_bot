@@ -91,13 +91,13 @@ async def is_active(user_id):
     return bool(result)
 
 
-async def add_photo_links(report_name, photo_links):
-    global db_connection
-    await db_connection.execute(f'''
-                                INSERT INTO {report_name} ( photo_links)
-                                VALUES (?)
-                                ''', ( photo_links))
-    await db_connection.commit()
+# async def add_photo_links(report_name, photo_links):
+#     global db_connection
+#     await db_connection.execute(f'''
+#                                 INSERT INTO {report_name} ( photo_links)
+#                                 VALUES (?)
+#                                 ''', ( photo_links))
+#     await db_connection.commit()
 
 
 async def get_construction_projects():
@@ -117,6 +117,50 @@ async def get_all_admins_id():
     cursor = await db_connection.execute("SELECT user_id FROM Users WHERE is_admin = 1")
     rows = await cursor.fetchall()
     return [row[0] for row in rows]
+
+
+async def get_not_uploaded_reports():
+    global db_connection
+    not_uploaded_reports = []
+
+    # Список таблиц с отчётами
+    report_tables = [
+        "preparatory_reports",
+        "earthworks_reports",
+        "artificial_structures_reports",
+        "road_clothing_reports",
+        "asphalt_clothing_reports",
+        "road_devices_reports"
+    ]
+
+    # Проходим по каждой таблице
+    for table_name in report_tables:
+        # Запрос на получение невыгруженных отчётов
+        cursor = await db_connection.execute(f"""SELECT * FROM {table_name} WHERE is_uploaded_to_cloud = FALSE""")
+        rows = await cursor.fetchall()
+
+        # Получаем названия столбцов для текущей таблицы
+        cursor = await db_connection.execute(f"PRAGMA table_info({table_name})")
+        columns_info = await cursor.fetchall()
+        columns = [column[1] for column in columns_info]  # Извлекаем имена столбцов
+
+        # Преобразуем каждую строку в словарь
+        for row in rows:
+            report_data = dict(zip(columns, row))  # Создаем словарь {имя_столбца: значение}
+            not_uploaded_reports.append({
+                "report_name": table_name,  # Название таблицы как report_name
+                "report_data": report_data  # Данные отчёта
+            })
+
+    return not_uploaded_reports
+
+
+async def mark_report_as_uploaded(report_name, user_id, create_datetime):
+    global db_connection
+    await db_connection.execute(f"""UPDATE {report_name} SET is_uploaded_to_cloud = TRUE, uploaded_by_user_id = ?, uploaded_at = ? 
+                                WHERE is_uploaded = FALSE AND uploaded_by_user_id = ? AND uploaded_at = ?"""
+                                , (user_id, datetime.now().isoformat(), user_id, create_datetime))
+    await db_connection.commit()
 
 
 async def update_construction_project(projects_data):

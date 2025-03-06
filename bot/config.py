@@ -15,7 +15,8 @@ class Config:
     TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
     DB_URL=os.getenv('DB_URL')
     ADMIN_IDS = json.loads(os.getenv('ADMIN_IDS', '[]'))
-    YANDEX_DISK_TOKEN = os.getenv('YANDEX_DISK_TOKEN')
-    YANDEX_DISK_FILE_PATH = os.getenv('YANDEX_DISK_FILE_PATH')
-    LOG_ROTATE_DAYS = int(os.getenv('LOG_ROTATE_DAYS', 15))
-
+    GOOGLE_CREDENTIALS_PATH = os.getenv('GOOGLE_CREDENTIALS_PATH')
+    GOOGLE_SCOPES = json.loads(os.getenv('GOOGLE_SCOPES', '[]'))
+    GOOGLE_MEDIA_FOLDER_ID = os.getenv('GOOGLE_MEDIA_FOLDER_ID')
+    GOOGLE_REPORTS_FILE_ID = os.getenv('GOOGLE_REPORTS_FILE_ID')
+    GOOGLE_DIRECTORY_ID = os.getenv('GOOGLE_DIRECTORY_ID')

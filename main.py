@@ -45,7 +45,6 @@ async def main():
             id="upload_not_uploaded_reports"
         )
 
-
         scheduler.start()
         dp.include_router(router)
 
@@ -61,6 +60,7 @@ async def main():
             await scheduler.shutdown()
         if hasattr(dp, '_polling') and dp._polling:
             await dp.stop_polling()
+
 
 if __name__ == "__main__":
     try:

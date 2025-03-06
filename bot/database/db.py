@@ -1,6 +1,5 @@
 import aiosqlite
 from bot.config import Config
-from datetime import datetime
 
 
 db_connection = None

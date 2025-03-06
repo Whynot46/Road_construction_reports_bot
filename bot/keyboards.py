@@ -1,6 +1,6 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 import bot.database.db as db
-import asyncio
+
 
 async def get_main_menu_keyboard():
     main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[
@@ -63,7 +63,8 @@ async def get_project_keyboard():
     if len(projects)>0:
         projects_buttons = []
         for project in projects:
-            projects_buttons.append([KeyboardButton(text=project[1])])
+            if project[2]:
+                projects_buttons.append([KeyboardButton(text=project[1])])
             
         project_keyboard = ReplyKeyboardMarkup(keyboard=projects_buttons, resize_keyboard=True)
         return project_keyboard
@@ -75,7 +76,3 @@ async def get_project_keyboard():
 
 async def remove_keyboard():
     return ReplyKeyboardRemove()
-
-# download_keyboard = track_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-#         [InlineKeyboardButton(text="download_keyboard", callback_data=f"was_download")]
-#     ])

@@ -2,7 +2,7 @@ import aiosqlite
 from bot.config import Config
 from datetime import datetime
 
-# Соединения с базой данных
+
 db_connection = None
 
 
@@ -17,19 +17,20 @@ async def close_db():
     global db_connection
     if db_connection:
         await db_connection.close()
-        
-        
-async def update_user_id(user_id, firstname, middlename, lastname):
+
+
+#Сохранить id авторизованного пользователя 
+async def update_user_id(user_id : int, firstname : str, middlename : str, lastname : str):
     global db_connection
     await db_connection.execute("UPDATE users SET user_id = ? WHERE firstname = ? AND middlename = ? AND lastname = ?"
                                 , (user_id, firstname, middlename, lastname))
     await db_connection.commit()  
     
-    
-async def update_all_user_status(user_data):
+
+#Обновить статусы всех пользователей    
+async def update_all_user_status(user_data : dict):
     global db_connection
     if not user_data:
-        print("Нет данных для обновления пользователей.")
         return
 
     for employee in user_data:
@@ -41,34 +42,35 @@ async def update_all_user_status(user_data):
 
         # Проверяем, существует ли пользователь с таким ФИО
         cursor = await db_connection.execute(
-            "SELECT user_id FROM Users WHERE firstname = ? AND middlename = ? AND lastname = ?",
+            "SELECT user_id FROM users WHERE firstname = ? AND middlename = ? AND lastname = ?",
             (firstname, middlename, lastname)
         )
         existing_user = await cursor.fetchone()
 
         if existing_user:
             await db_connection.execute(
-                "UPDATE Users SET is_active = ? WHERE user_id = ?",
+                "UPDATE users SET is_active = ? WHERE user_id = ?",
                 (is_active, existing_user[0]))
         else:
             await db_connection.execute(
-                "INSERT INTO Users (firstname, middlename, lastname, is_active) VALUES (?, ?, ?, ?)",
+                "INSERT INTO users (firstname, middlename, lastname, is_active) VALUES (?, ?, ?, ?)",
                 (firstname, middlename, lastname, is_active))
 
     await db_connection.commit()
     
-    
+
+#Получить id всех пользователей   
 async def get_all_user_id() -> list:
     global db_connection
-    cursor = await db_connection.execute('SELECT user_id FROM Users')
+    cursor = await db_connection.execute('SELECT user_id FROM users')
     rows = await cursor.fetchall()
     return [row[0] for row in rows]
 
 
 # Получить ФИО пользователя по user_id
-async def get_fullname(user_id):
+async def get_fullname(user_id : int) -> str:
     global db_connection
-    cursor = await db_connection.execute('''SELECT firstname, middlename, lastname FROM Users WHERE user_id = ?''', (user_id,))
+    cursor = await db_connection.execute('''SELECT firstname, middlename, lastname FROM users WHERE user_id = ?''', (user_id,))
     result = await cursor.fetchone()
     if result:
         return f"{result[2]} {result[0]} {result[1]}"
@@ -79,47 +81,41 @@ async def get_fullname(user_id):
 # Проверка, зарегистрирован ли пользователь
 async def is_old(user_id):
     global db_connection
-    cursor = await db_connection.execute("SELECT 1 FROM Users WHERE user_id = ?", (user_id,))
+    cursor = await db_connection.execute("SELECT 1 FROM users WHERE user_id = ?", (user_id,))
     result = await cursor.fetchone()
     return bool(result)
 
 
-async def is_active(user_id):
+#Проверка, активен ли пользователь
+async def is_user_active(user_id : int):
     global db_connection
-    cursor = await db_connection.execute("SELECT 1 FROM Users WHERE user_id = ? AND is_active = 1", (user_id,))
+    cursor = await db_connection.execute("SELECT 1 FROM users WHERE user_id = ? AND is_active = 1", (user_id,))
     result = await cursor.fetchone()
     return bool(result)
 
 
-# async def add_photo_links(report_name, photo_links):
-#     global db_connection
-#     await db_connection.execute(f'''
-#                                 INSERT INTO {report_name} ( photo_links)
-#                                 VALUES (?)
-#                                 ''', ( photo_links))
-#     await db_connection.commit()
-
-
-async def get_construction_projects():
+#Получить все объекты (проекты дорожно-строительной компании)
+async def get_construction_projects() -> list:
     global db_connection
     cursor = await db_connection.execute("SELECT * FROM construction_projects")
     return await cursor.fetchall()
 
 
-async def get_construction_project(project_id):
+async def get_construction_project(project_id : id) -> dict:
     global db_connection
     cursor = await db_connection.execute("SELECT * FROM construction_projects WHERE id = ?", (project_id,))
     return await cursor.fetchone()
 
 
-async def get_all_admins_id():
+async def get_all_admins_id() -> list:
     global db_connection
-    cursor = await db_connection.execute("SELECT user_id FROM Users WHERE is_admin = 1")
+    cursor = await db_connection.execute("SELECT user_id FROM users WHERE is_admin = 1")
     rows = await cursor.fetchall()
     return [row[0] for row in rows]
 
 
-async def get_not_uploaded_reports():
+#Получить невыгруженные отчёты
+async def get_not_uploaded_reports() -> list:
     global db_connection
     not_uploaded_reports = []
 
@@ -133,40 +129,49 @@ async def get_not_uploaded_reports():
         "road_devices_reports"
     ]
 
-    # Проходим по каждой таблице
     for table_name in report_tables:
-        # Запрос на получение невыгруженных отчётов
+        
         cursor = await db_connection.execute(f"""SELECT * FROM {table_name} WHERE is_uploaded_to_cloud = FALSE""")
         rows = await cursor.fetchall()
 
-        # Получаем названия столбцов для текущей таблицы
         cursor = await db_connection.execute(f"PRAGMA table_info({table_name})")
         columns_info = await cursor.fetchall()
-        columns = [column[1] for column in columns_info]  # Извлекаем имена столбцов
+        columns = [column[1] for column in columns_info]
 
-        # Преобразуем каждую строку в словарь
         for row in rows:
-            report_data = dict(zip(columns, row))  # Создаем словарь {имя_столбца: значение}
+            report_data = dict(zip(columns, row))
             not_uploaded_reports.append({
-                "report_name": table_name,  # Название таблицы как report_name
-                "report_data": report_data  # Данные отчёта
+                "report_name": table_name,
+                "report_data": report_data
             })
 
     return not_uploaded_reports
 
 
-async def mark_report_as_uploaded(report_name, user_id, create_datetime):
+async def mark_report_as_uploaded(report_name: str, create_datetime: str):
     global db_connection
-    await db_connection.execute(f"""UPDATE {report_name} SET is_uploaded_to_cloud = TRUE, uploaded_by_user_id = ?, uploaded_at = ? 
-                                WHERE is_uploaded = FALSE AND uploaded_by_user_id = ? AND uploaded_at = ?"""
-                                , (user_id, datetime.now().isoformat(), user_id, create_datetime))
+
+    table_names = {
+        "Подготовительные работы": "preparatory_reports",
+        "Земляные работы": "earthworks_reports",
+        "Искусственные сооружения": "artificial_structures_reports",
+        "Дорожная одежда": "road_clothing_reports",
+        "Асфальт": "asphalt_clothing_reports",
+        "Дорожные устройства и обстановка дороги": "road_devices_reports"
+        }
+    await db_connection.execute(
+        f"""UPDATE {table_names[report_name]} 
+            SET is_uploaded_to_cloud = TRUE 
+            WHERE is_uploaded_to_cloud = FALSE 
+            AND create_datetime = ?""",
+        (create_datetime,)
+    )
     await db_connection.commit()
 
 
-async def update_construction_project(projects_data):
+async def update_construction_project(projects_data : dict) -> None:
     global db_connection
     if not projects_data:
-        print("Нет данных для обновления проектов.")
         return
 
     for project in projects_data:

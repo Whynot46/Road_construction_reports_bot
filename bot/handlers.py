@@ -475,6 +475,11 @@ async def set_earthworks_photo(message: Message, state: FSMContext, bot: Bot):
                         f"Ссылки на фото:\n{report_data['photo_links']}\n"
                         , reply_markup= await kb.get_report_keyboard())
         
+    else:
+        await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
+
+
+        
 
 @exception_decorator        
 @router.message(Earthworks_steps.is_ok)
@@ -549,6 +554,9 @@ async def set_artificial_structures_photo(message: Message, state: FSMContext, b
                         f"Объем работ: {report_data['work_scope']}\n"
                         f"Ссылки на фото:\n{report_data['photo_links']}\n"
                         , reply_markup= await kb.get_report_keyboard())
+        
+    else:
+        await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
         
 
 @exception_decorator        
@@ -700,6 +708,9 @@ async def set_road_clothing_photo(message: Message, state: FSMContext, bot: Bot)
                         f"Устройство основания из щебня. Количество площадь/толщина.: {report_data['foundation_construction_area']}\n"
                         f"Ссылки на фото:\n{report_data['photo_links']}\n"
                         , reply_markup= await kb.get_report_keyboard())
+        
+    else:
+        await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
         
 
 @exception_decorator        
@@ -884,6 +895,8 @@ async def set_asphalt_photo(message: Message, state: FSMContext, bot: Bot):
                         f"Укладка асфальтобетонной смеси. Верхний слой. Количество площадь/толщина: {report_data['asphalt_mixture_upper_area']}\n"
                         f"Ссылки на фото:\n{report_data['photo_links']}\n"
                         , reply_markup= await kb.get_report_keyboard())
+    else:
+        await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
         
 
 @exception_decorator        
@@ -977,6 +990,9 @@ async def set_road_devices_photo(message: Message, state: FSMContext, bot: Bot):
                         f"Другая работа с объемом по обстановке дороги: {report_data['other_works']}\n"
                         f"Ссылки на фото:\n{report_data['photo_links']}\n"
                         , reply_markup= await kb.get_report_keyboard())
+        
+    else:
+        await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
         
 
 @exception_decorator        

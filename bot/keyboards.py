@@ -4,7 +4,7 @@ import bot.database.db as db
 
 async def get_main_menu_keyboard():
     main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(text='Заполнить отчеты')]
+        [KeyboardButton(text='Заполнить отчёты')]
         ], resize_keyboard=True)
     return main_menu_keyboard
 
@@ -22,6 +22,17 @@ async def get_report_keyboard():
         [KeyboardButton(text='Заполнить заново')]
         ], resize_keyboard=True)
     return report_keyboard
+
+
+def get_quarries_keyboard():
+    quarries_keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Добавить материал")],
+            [KeyboardButton(text="Перейти к следующему вопросу")]
+        ],
+        resize_keyboard=True
+    )
+    return quarries_keyboard
 
 
 async def get_skip_keyboard():

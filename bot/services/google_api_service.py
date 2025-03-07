@@ -45,7 +45,7 @@ async def upload_report(reports_data, user_fullname):
         sheet_name = reports_data.get("stage", "")
 
         user_data = {
-            "report_date": str(datetime.now().strftime("%Y-%m-%d")),
+            "report_date": str(datetime.now().strftime("%d.%m.%Y")),
             "project": reports_data.get("project", ""),
             "fullname": user_fullname,
             "shift": reports_data.get("shift", ""),
@@ -64,6 +64,10 @@ async def upload_report(reports_data, user_fullname):
 
         values = {**user_data, **reports_data, **people_and_equipment_report}
         range_name = f"{sheet_name}!A:Z"
+
+        for key in values:
+            if values[key] == "":
+                values[key] = " "
 
         body = {
             'values': [list(values.values())]

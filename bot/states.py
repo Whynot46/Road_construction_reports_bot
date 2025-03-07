@@ -24,6 +24,8 @@ class Preparatory_steps(Construction_projects_steps):
     temporary_construction = State() #Устройство временных автодорог и объездов. Укажите количество км.
     quarries_construction = State() #Устройство карьеров и резервов. Укажите какой материал привезли?
     quarries_construction_quantity = State() #Устройство карьеров и резервов. Укажите количество в тоннах.
+    add_material = State()  # Состояние для добавления материала
+    add_quantity = State()  # Состояние для добавления количества
     cutting_asphalt_area = State() #Срезка асфальтобетонного покрытия методом холодного фрезерования. Укажите площадь в м².
     other_works = State() #Другие работы? Опишите.
     photo_links = State() #Ссылки на фото.
@@ -34,9 +36,9 @@ class Preparatory_steps(Construction_projects_steps):
 class Earthworks_steps(Construction_projects_steps):
     detailed_breakdown = State() #Детальная разбивка элементов дороги и подготовка основания Укажите с какого ПК по какой ПК в формате: 1+00-2+00
     excavations_development = State() #Разработка выемок и возведение насыпей. Укажите вид работ.
-    excavations_development_quantity = State() #Разработка выемок и возведение насыпей. Укажите количество в м3.
+    excavations_development_quantity = State() #Разработка выемок и возведение насыпей. Укажите количество в м³.
     soil_compaction = State() #Уплотнение грунта. Укажите с какого ПК по какой ПК в формате: 1+00-2+00
-    soil_compaction_quantity = State() #Уплотнение грунта. Укажите количество в м3.
+    soil_compaction_quantity = State() #Уплотнение грунта. Укажите количество в м³.
     final_layout = State() #Окончательная планировка.  Укажите с какого ПК по какой ПК в формате: 1+00-2+00
     final_layout_quantity = State() #Окончательная планировка. Укажите количество в м2.
     photo_links = State() #Ссылки на фото.
@@ -95,9 +97,9 @@ class Material_consumption_report_steps(Construction_projects_steps):
     side_stone_quantity = State() #Бортовой камень.  Укажите количество п.м.
     ebdc_quantity = State() #Эмульсия битумная катионная (ЭБДК (Б)). Укажите количество. 
     asphalt_concrete_mixture = State() #Асфальтобетонная смесь. Укажите тип.
-    asphalt_concrete_scope = State() #Асфальтобетонная смесь. Укажите количество м3. 
+    asphalt_concrete_scope = State() #Асфальтобетонная смесь. Укажите количество м³. 
     concrete_mixture = State() #Бетонная смесь. Укажите марку.
-    concrete_mixture_quantity = State() #Бетонная смесь. Укажите количество м3.
+    concrete_mixture_quantity = State() #Бетонная смесь. Укажите количество м³.
     other_material = State() #Другие материалы. Виды и количество?
     is_ok = State()
 

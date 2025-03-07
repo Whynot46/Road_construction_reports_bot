@@ -72,7 +72,7 @@ async def registration(message: Message, state: FSMContext):
 
 
 @exception_decorator    
-@router.message(F.text == "Заполнить отчеты" or F.text == "Старт")  
+@router.message(F.text == "Заполнить отчёты" or F.text == "Старт")  
 async def chouse_shift(message: Message, state : FSMContext):  
     await state.set_state(Construction_projects_steps.shift)
     await message.answer("Выберите смену", reply_markup= await kb.get_shift_keyboard())
@@ -323,7 +323,7 @@ async def set_preparatory_report(message: Message, state: FSMContext):
         await message.answer("Разбивка трассы. Укажите количество км.", reply_markup= await kb.get_none_work_keyboard())
     elif message.text == "Отправить":
         await state.set_state(Material_consumption_report_steps.pgs_quantity)
-        await message.answer("Заполнить отчет по расходу материала на объекте")
+        await message.answer("Заполните отчёт по расходу материала на объекте")
         await message.answer("ПГС. Укажите количество тонн.", reply_markup=await kb.get_skip_keyboard())
     else:
         await state.set_state(Preparatory_steps.is_ok)
@@ -355,7 +355,7 @@ async def set_excavations_development(message: Message, state: FSMContext, messa
     else:
         await state.update_data(excavations_development=message_text)
         await state.set_state(Earthworks_steps.excavations_development_quantity)
-        await message.answer("Разработка выемок и возведение насыпей. Укажите количество в м3.", reply_markup= await kb.get_none_work_keyboard())
+        await message.answer("Разработка выемок и возведение насыпей. Укажите количество в м³.", reply_markup= await kb.get_none_work_keyboard())
     
 
 @exception_decorator
@@ -378,7 +378,7 @@ async def set_soil_compaction(message: Message, state: FSMContext, message_text 
     if re.match(r"(\d+)\+(\d+)-(\d+)\+(\d+)", message_text) or message_text=="":
         await state.update_data(soil_compaction=message_text)
         await state.set_state(Earthworks_steps.soil_compaction_quantity)
-        await message.answer("Уплотнение грунта. Укажите количество в м3.", reply_markup= await kb.get_none_work_keyboard())
+        await message.answer("Уплотнение грунта. Укажите количество в м³.", reply_markup= await kb.get_none_work_keyboard())
     else:
         await state.set_state(Earthworks_steps.soil_compaction)
         await message.answer("Необходимо ввести значение в формате 1+00-2+00!", reply_markup= await kb.get_none_work_keyboard())
@@ -467,9 +467,9 @@ async def set_earthworks_photo(message: Message, state: FSMContext, bot: Bot):
                         f"Детальная разбивка элементов дороги и подготовка основания. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['detailed_breakdown']}\n"
                         f"Разработка выемок и возведение насыпей. Вид работ: {report_data['excavations_development']}\n"
                         f"Водоотведение и временное водопонижение. Вид работ: {report_data['excavations_development_quantity']}\n"
-                        f"Разработка выемок и возведение насыпей. Количество в м3: {report_data['excavations_development_quantity']}\n"
+                        f"Разработка выемок и возведение насыпей. Количество в м³: {report_data['excavations_development_quantity']}\n"
                         f"Уплотнение грунта. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['soil_compaction']}\n"
-                        f"Уплотнение грунта. Количество в м3: {report_data['soil_compaction_quantity']}\n"
+                        f"Уплотнение грунта. Количество в м³: {report_data['soil_compaction_quantity']}\n"
                         f"Окончательная планировка. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['final_layout']}\n"
                         f"Окончательная планировка. Количество в м2: {report_data['final_layout_quantity']}\n"
                         f"Ссылки на фото:\n{report_data['photo_links']}\n"
@@ -485,7 +485,7 @@ async def set_earthworks_report(message: Message, state: FSMContext):
         await message.answer("Детальная разбивка элементов дороги и подготовка основания Укажите с какого ПК по какой ПК в формате: 1+00-2+00", reply_markup= await kb.get_none_work_keyboard())
     elif message.text == "Отправить":
         await state.set_state(Material_consumption_report_steps.pgs_quantity)
-        await message.answer("Заполнить отчет по расходу материала на объекте")
+        await message.answer("Заполните отчёт по расходу материала на объекте")
         await message.answer("ПГС. Укажите количество тонн.", reply_markup=await kb.get_skip_keyboard())
     else:
         await state.set_state(Earthworks_steps.is_ok)
@@ -560,7 +560,7 @@ async def set_artificial_structures_report(message: Message, state: FSMContext):
         await message.answer("Укажите вид работ.", reply_markup= await kb.get_none_work_keyboard())
     elif message.text == "Отправить":
         await state.set_state(Material_consumption_report_steps.pgs_quantity)
-        await message.answer("Заполнить отчет по расходу материала на объекте")
+        await message.answer("Заполните отчёт по расходу материала на объекте")
         await message.answer("ПГС. Укажите количество тонн.", reply_markup=await kb.get_skip_keyboard())
     else:
         await state.set_state(Artificial_structures_steps.is_ok)
@@ -895,7 +895,7 @@ async def set_asphalt_report(message: Message, state: FSMContext):
         await message.answer("Очистка основания от пыли и грязи механизированным способом. Укажите с какого ПК по какой ПК в формате: 1+00-2+00.", reply_markup= await kb.get_none_work_keyboard())
     elif message.text == "Отправить":
         await state.set_state(Material_consumption_report_steps.pgs_quantity)
-        await message.answer("Заполнить отчет по расходу материала на объекте")
+        await message.answer("Заполните отчёт по расходу материала на объекте")
         await message.answer("ПГС. Укажите количество тонн.", reply_markup=await kb.get_skip_keyboard())
     else:
         await state.set_state(Asphalt_steps.is_ok)
@@ -988,7 +988,7 @@ async def set_road_devices_report(message: Message, state: FSMContext):
         await message.answer("Напишите нумерацию  и количество знаков, установленных за сегодня, в формате 3.24 - 5", reply_markup= await kb.get_none_work_keyboard())
     elif message.text == "Отправить":
         await state.set_state(Material_consumption_report_steps.pgs_quantity)
-        await message.answer("Заполнить отчет по расходу материала на объекте")
+        await message.answer("Заполните отчёт по расходу материала на объекте")
         await message.answer("ПГС. Укажите количество тонн.", reply_markup=await kb.get_skip_keyboard())
     else:
         await state.set_state(Road_devices_steps.is_ok)
@@ -1089,7 +1089,7 @@ async def set_asphalt_concrete_mixture(message: Message, state: FSMContext, mess
     else:
         await state.update_data(asphalt_concrete_mixture=message_text)
         await state.set_state(Material_consumption_report_steps.asphalt_concrete_scope)
-        await message.answer("Асфальтобетонная смесь. Укажите количество м3.", reply_markup= await kb.get_skip_keyboard())
+        await message.answer("Асфальтобетонная смесь. Укажите количество м³.", reply_markup= await kb.get_skip_keyboard())
     
 
 @exception_decorator   
@@ -1117,7 +1117,7 @@ async def set_concrete_mixture(message: Message, state: FSMContext, message_text
     else:
         await state.update_data(concrete_mixture=message_text)
         await state.set_state(Material_consumption_report_steps.concrete_mixture_quantity)
-        await message.answer("Бетонная смесь. Укажите количество м3.", reply_markup= await kb.get_skip_keyboard())
+        await message.answer("Бетонная смесь. Укажите количество м³.", reply_markup= await kb.get_skip_keyboard())
     
 
 @exception_decorator  
@@ -1150,9 +1150,9 @@ async def set_other_material(message: Message, state: FSMContext, message_text :
                 f"Бортовой камень. Количество п.м.: {report_data['side_stone_quantity']}\n"
                 f"Эмульсия битумная катионная (ЭБДК (Б)). Количество: {report_data['ebdc_quantity']}\n"
                 f"Асфальтобетонная смесь. Тип: {report_data['asphalt_concrete_mixture']}\n"
-                f"Асфальтобетонная смесь. Количество м3: {report_data['asphalt_concrete_scope']}\n"
+                f"Асфальтобетонная смесь. Количество м³: {report_data['asphalt_concrete_scope']}\n"
                 f"Бетонная смесь. Марка: {report_data['concrete_mixture']}\n"
-                f"Бетонная смесь. Количество м3: {report_data['concrete_mixture_quantity']}\n"
+                f"Бетонная смесь. Количество м³: {report_data['concrete_mixture_quantity']}\n"
                 f"Другие материалы: {report_data['other_material']}\n"
                 , reply_markup= await kb.get_report_keyboard())
       
@@ -1163,11 +1163,11 @@ async def save_material_report(message: Message, state: FSMContext):
     await state.update_data(is_ok=message.text)
     if message.text == "Заполнить заново":
         await state.set_state(Material_consumption_report_steps.pgs_quantity)
-        await message.answer("Заполнить отчет по расходу материала на объекте")
+        await message.answer("Заполните отчёт по расходу материала на объекте")
         await message.answer("ПГС. Укажите количество тонн.", reply_markup=await kb.get_skip_keyboard())
     elif message.text == "Отправить":
         await state.set_state(People_and_equipment_report_steps.date)
-        await message.answer("Заполните отчет по количеству людей и техники на объекте")
+        await message.answer("Заполните отчёт по количеству людей и техники на объекте")
         await message.answer("Напишите дату  в формате (дд.мм.гг)", reply_markup= await kb.get_skip_keyboard())
     else:
         await state.set_state(Material_consumption_report_steps.is_ok)
@@ -1403,9 +1403,9 @@ async def save_reports(message: Message, state: FSMContext):
         user_fullname = await db.get_fullname(message.from_user.id)
         await google_disk.upload_report(report_data, user_fullname)
         for id in Config.ADMIN_IDS:
-            await message.bot.send_message(id, f"{user_fullname} отправил отчет")
+            await message.bot.send_message(id, f"{user_fullname} отправил отчёт")
         await state.clear()
-        await message.answer("Поздравляем! Все отчеты приняты!", reply_markup= await kb.get_main_menu_keyboard())
+        await message.answer("Поздравляем! Все отчёты приняты!", reply_markup= await kb.get_main_menu_keyboard())
     else:
         await state.set_state(Material_consumption_report_steps.is_ok)
         await message.answer("Неизвестная команда", reply_markup=await kb.get_report_keyboard())
@@ -1440,7 +1440,7 @@ async def send_morning_notification(bot):
     try:
         user_ids = await db.get_all_user_id()
         for user_id in user_ids:
-            await bot.send_message(user_id, 'Добрый день. Время заполнять отчет для ночной смены. Нажмите "Старт".', reply_markup=await kb.get_start_keyboard())
+            await bot.send_message(user_id, 'Добрый день. Время заполнять отчёт для ночной смены. Нажмите "Старт".', reply_markup=await kb.get_start_keyboard())
     except Exception as error:
         print(f"Ошибка при отправке утреннего уведомления: {error}")
 
@@ -1449,6 +1449,6 @@ async def send_evening_notification(bot):
     try:
         user_ids = await db.get_all_user_id()
         for user_id in user_ids:
-            await bot.send_message(user_id,  'Добрый день. Время заполнять отчет для дневной смены. Нажмите "Старт".', reply_markup=await kb.get_start_keyboard())
+            await bot.send_message(user_id,  'Добрый день. Время заполнять отчёт для дневной смены. Нажмите "Старт".', reply_markup=await kb.get_start_keyboard())
     except Exception as error:
         print(f"Ошибка при отправке утреннего уведомления: {error}")

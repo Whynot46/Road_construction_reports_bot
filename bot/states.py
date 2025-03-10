@@ -95,7 +95,7 @@ class Material_consumption_report_steps(Construction_projects_steps):
     crushed_stone_quantity = State() #Щебень. Укажите количество тонн.
     side_stone = State() #Бортовой камень — дорожный или тротуарный? 
     side_stone_quantity = State() #Бортовой камень.  Укажите количество п.м.
-    ebdc_quantity = State() #Эмульсия битумная катионная (ЭБДК (Б)). Укажите количество. 
+    ebdc_quantity = State() #Эмульсия битумная. Укажите количество. 
     asphalt_concrete_mixture = State() #Асфальтобетонная смесь. Укажите тип.
     asphalt_concrete_scope = State() #Асфальтобетонная смесь. Укажите количество м³. 
     concrete_mixture = State() #Бетонная смесь. Укажите марку.

@@ -46,6 +46,14 @@ def exception_decorator(func):
     return wrapper
 
 
+def isfloat(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
 @exception_decorator
 @router.message(F.text, Command("start"))
 async def start_loop(message: Message, state : FSMContext):
@@ -122,7 +130,7 @@ async def set_route_breakdown(message: Message, state: FSMContext):
 @router.message(Preparatory_steps.route_breakdown)
 @handle_none_work
 async def set_route_breakdown(message: Message, state: FSMContext, message_text: str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(route_breakdown=message_text)
         await state.set_state(Preparatory_steps.clearing_way)
         await message.answer("Расчистка полосы отвода. Укажите количество км.", reply_markup= await kb.get_none_work_keyboard())
@@ -135,7 +143,7 @@ async def set_route_breakdown(message: Message, state: FSMContext, message_text:
 @router.message(Preparatory_steps.clearing_way)
 @handle_none_work
 async def set_clearing_way(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(clearing_way=message_text)
         await state.set_state(Preparatory_steps.water_disposal)
         await message.answer("Водоотведение и временное водопонижение. Укажите вид работ.", reply_markup= await kb.get_none_work_keyboard())
@@ -202,7 +210,7 @@ async def set_removal_utility_networks_scope(message: Message, state: FSMContext
 @router.message(Preparatory_steps.temporary_construction)
 @handle_none_work
 async def set_temporary_construction(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(temporary_construction=message_text)
         await state.set_state(Preparatory_steps.quarries_construction)
         await message.answer("Устройство карьеров и резервов. Укажите какой материал привезли?", reply_markup= await kb.get_none_work_keyboard())
@@ -230,7 +238,7 @@ async def set_quarries_construction(message: Message, state: FSMContext, message
 @router.message(Preparatory_steps.quarries_construction_quantity)
 @handle_none_work
 async def set_quarries_construction_quantity(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(quarries_construction_quantity=message_text)
         await state.set_state(Preparatory_steps.cutting_asphalt_area)
         await message.answer("Срезка асфальтобетонного покрытия методом холодного фрезерования. Укажите площадь в м².", reply_markup= await kb.get_none_work_keyboard())
@@ -243,7 +251,7 @@ async def set_quarries_construction_quantity(message: Message, state: FSMContext
 @router.message(Preparatory_steps.cutting_asphalt_area)
 @handle_none_work
 async def set_cutting_asphalt_area(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(cutting_asphalt_area=message_text)
         await state.set_state(Preparatory_steps.other_works)
         await message.answer("Другие работы? Опишите.", reply_markup= await kb.get_none_work_keyboard())
@@ -362,7 +370,7 @@ async def set_excavations_development(message: Message, state: FSMContext, messa
 @router.message(Earthworks_steps.excavations_development_quantity)
 @handle_none_work
 async def set_excavations_development_quantity(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(excavations_development_quantity=message_text)
         await state.set_state(Earthworks_steps.soil_compaction)
         await message.answer("Уплотнение грунта. Укажите с какого ПК по какой ПК в формате: 1+00-2+00", reply_markup= await kb.get_none_work_keyboard())
@@ -388,7 +396,7 @@ async def set_soil_compaction(message: Message, state: FSMContext, message_text 
 @router.message(Earthworks_steps.soil_compaction_quantity)
 @handle_none_work
 async def set_soil_compaction_quantity(message: Message, state: FSMContext, message_text : str): 
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(soil_compaction_quantity=message_text)
         await state.set_state(Earthworks_steps.final_layout)
         await message.answer("Окончательная планировка.  Укажите с какого ПК по какой ПК в формате: 1+00-2+00", reply_markup= await kb.get_none_work_keyboard())
@@ -420,7 +428,7 @@ async def set_final_layout(message: Message, state: FSMContext, message_text : s
 @router.message(Earthworks_steps.final_layout_quantity)
 @handle_none_work
 async def set_final_layout_quantity(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(final_layout_quantity=message_text)
         await state.set_state(Earthworks_steps.photo_links)
         await message.answer("Прикрепить 5 четких фото по этому виду работ", reply_markup= await kb.remove_keyboard())
@@ -745,7 +753,7 @@ async def set_cleaning_base(message: Message, state: FSMContext, message_text : 
 @router.message(Asphalt_steps.cleaning_base_area)
 @handle_none_work
 async def set_cleaning_base_area(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(cleaning_base_area=message_text)
         await state.set_state(Asphalt_steps.installation_primer)
         await message.answer("Устройство битумной эмульсионной подгрунтовки. Укажите с какого ПК по какой ПК в формате: 1+00-2+00.", reply_markup= await kb.get_none_work_keyboard())
@@ -777,7 +785,7 @@ async def set_installation_primer(message: Message, state: FSMContext, message_t
 @router.message(Asphalt_steps.installation_primer_area)
 @handle_none_work
 async def set_installation_primer_area(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(installation_primer_area=message_text)
         await state.set_state(Asphalt_steps.asphalt_mixture_lower)
         await message.answer("Укладка асфальтобетонной смеси. Нижний слой. Укажите с какого ПК по какой ПК в формате: 1+00-2+00.", reply_markup= await kb.get_none_work_keyboard())
@@ -919,7 +927,7 @@ async def set_asphalt_report(message: Message, state: FSMContext):
 @router.message(Road_devices_steps.characters_number)
 @handle_none_work
 async def set_characters_number(message: Message, state: FSMContext, message_text : str):
-    if re.match(r"\d+\.\d+\s-\s\d+", message_text) or message_text=="": 
+    if re.match(r"\d+\.\d+\s-\s\d+", message_text.replace(" ", "")) or message_text=="": 
         await state.update_data(characters_number=message_text)
         await state.set_state(Road_devices_steps.signal_posts_number)
         await message.answer("Напишите количество сигнальных столбиков, установленных за сегодня.", reply_markup= await kb.get_none_work_keyboard())
@@ -932,7 +940,7 @@ async def set_characters_number(message: Message, state: FSMContext, message_tex
 @router.message(Road_devices_steps.signal_posts_number)
 @handle_none_work
 async def set_signal_posts_number(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(signal_posts_number=message_text)
         await state.set_state(Road_devices_steps.other_works)
         await message.answer("Напишите другую работу с объемом по обстановке дороги.", reply_markup= await kb.get_none_work_keyboard())
@@ -986,7 +994,6 @@ async def set_road_devices_photo(message: Message, state: FSMContext, bot: Bot):
                         f"Смена: {report_data['shift']}\n"
                         f"Объект: {report_data['project']}\n"
                         f"Нумерация  и количество знаков, установленных за сегодня, в формате 3.24 - 5: {report_data['characters_number']}\n"
-                        f"Подстилающий слой из песка. Количество площадь/толщина: {report_data['signal_posts_number']}\n"
                         f"Другая работа с объемом по обстановке дороги: {report_data['other_works']}\n"
                         f"Ссылки на фото:\n{report_data['photo_links']}\n"
                         , reply_markup= await kb.get_report_keyboard())
@@ -1015,7 +1022,7 @@ async def set_road_devices_report(message: Message, state: FSMContext):
 @router.message(Material_consumption_report_steps.pgs_quantity)
 @handle_skip
 async def set_pgs_quantity(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(pgs_quantity=message_text)
         await state.set_state(Material_consumption_report_steps.crushed_stone_fraction)
         await message.answer("Щебень. Укажите фракцию щебня.", reply_markup= await kb.get_skip_keyboard())
@@ -1043,7 +1050,7 @@ async def set_crushed_stone_fraction(message: Message, state: FSMContext, messag
 @router.message(Material_consumption_report_steps.crushed_stone_quantity)
 @handle_skip
 async def set_crushed_stone_quantity(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(crushed_stone_quantity=message_text)
         await state.set_state(Material_consumption_report_steps.side_stone)
         await message.answer("Бортовой камень — дорожный или тротуарный?", reply_markup= await kb.get_skip_keyboard())
@@ -1060,7 +1067,7 @@ async def set_side_stone(message: Message, state: FSMContext, message_text : str
         await state.update_data(side_stone=message_text)
         await state.update_data(side_stone_quantity=message_text)
         await state.set_state(Material_consumption_report_steps.ebdc_quantity)
-        await message.answer("Эмульсия битумная катионная (ЭБДК (Б)). Укажите количество.", reply_markup= await kb.get_skip_keyboard())
+        await message.answer("Эмульсия битумная. Укажите количество.", reply_markup= await kb.get_skip_keyboard())
     else:
         await state.update_data(side_stone=message_text)
         await state.set_state(Material_consumption_report_steps.side_stone_quantity)
@@ -1071,10 +1078,10 @@ async def set_side_stone(message: Message, state: FSMContext, message_text : str
 @router.message(Material_consumption_report_steps.side_stone_quantity)
 @handle_skip
 async def set_side_stone_quantity(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(side_stone_quantity=message_text)
         await state.set_state(Material_consumption_report_steps.ebdc_quantity)
-        await message.answer("Эмульсия битумная катионная (ЭБДК (Б)). Укажите количество.", reply_markup= await kb.get_skip_keyboard())
+        await message.answer("Эмульсия битумная. Укажите количество.", reply_markup= await kb.get_skip_keyboard())
     else:
         await state.set_state(Material_consumption_report_steps.side_stone_quantity)
         await message.answer("Необходимо указать число!", reply_markup= await kb.get_skip_keyboard())    
@@ -1084,7 +1091,7 @@ async def set_side_stone_quantity(message: Message, state: FSMContext, message_t
 @router.message(Material_consumption_report_steps.ebdc_quantity)
 @handle_skip
 async def set_ebdc_quantity(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(ebdc_quantity=message_text)
         await state.set_state(Material_consumption_report_steps.asphalt_concrete_mixture)
         await message.answer("Асфальтобетонная смесь. Укажите тип.", reply_markup= await kb.get_skip_keyboard())
@@ -1105,14 +1112,14 @@ async def set_asphalt_concrete_mixture(message: Message, state: FSMContext, mess
     else:
         await state.update_data(asphalt_concrete_mixture=message_text)
         await state.set_state(Material_consumption_report_steps.asphalt_concrete_scope)
-        await message.answer("Асфальтобетонная смесь. Укажите количество м³.", reply_markup= await kb.get_skip_keyboard())
+        await message.answer("Асфальтобетонная смесь. Укажите количество в тоннах.", reply_markup= await kb.get_skip_keyboard())
     
 
 @exception_decorator   
 @router.message(Material_consumption_report_steps.asphalt_concrete_scope)
 @handle_skip
 async def set_asphalt_concrete_scope(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(asphalt_concrete_scope=message_text)
         await state.set_state(Material_consumption_report_steps.concrete_mixture)
         await message.answer("Бетонная смесь. Укажите марку.", reply_markup= await kb.get_skip_keyboard())
@@ -1140,7 +1147,7 @@ async def set_concrete_mixture(message: Message, state: FSMContext, message_text
 @router.message(Material_consumption_report_steps.concrete_mixture_quantity)
 @handle_skip
 async def set_concrete_mixture_quantity(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(concrete_mixture_quantity=message_text)
         await state.set_state(Material_consumption_report_steps.other_material)
         await message.answer("Другие материалы. Виды и количество?", reply_markup= await kb.get_skip_keyboard())
@@ -1164,7 +1171,7 @@ async def set_other_material(message: Message, state: FSMContext, message_text :
                 f"Щебень. Количество тонн: {report_data['crushed_stone_quantity']}\n"
                 f"Бортовой камень: {report_data['side_stone']}\n"
                 f"Бортовой камень. Количество п.м.: {report_data['side_stone_quantity']}\n"
-                f"Эмульсия битумная катионная (ЭБДК (Б)). Количество: {report_data['ebdc_quantity']}\n"
+                f"Эмульсия битумная. Количество: {report_data['ebdc_quantity']}\n"
                 f"Асфальтобетонная смесь. Тип: {report_data['asphalt_concrete_mixture']}\n"
                 f"Асфальтобетонная смесь. Количество м³: {report_data['asphalt_concrete_scope']}\n"
                 f"Бетонная смесь. Марка: {report_data['concrete_mixture']}\n"
@@ -1207,7 +1214,7 @@ async def set_date(message: Message, state: FSMContext, message_text : str):
 @router.message(People_and_equipment_report_steps.people_number)
 @handle_skip
 async def set_people_number(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(people_number=message_text)
         await state.set_state(People_and_equipment_report_steps.equipment_number)
         await message.answer("Сколько техники на объекте?", reply_markup= await kb.get_skip_keyboard())
@@ -1220,7 +1227,7 @@ async def set_people_number(message: Message, state: FSMContext, message_text : 
 @router.message(People_and_equipment_report_steps.equipment_number)
 @handle_skip
 async def set_equipment_number(message: Message, state: FSMContext, message_text : str):
-    if (message_text).isdigit() or message_text=="":
+    if (message_text).isdigit() or isfloat(message_text) or message_text=="":
         await state.update_data(equipment_number=message_text)
         report_data = await state.get_data()
         await state.set_state(People_and_equipment_report_steps.is_ok)
@@ -1467,4 +1474,4 @@ async def send_evening_notification(bot):
         for user_id in user_ids:
             await bot.send_message(user_id,  'Добрый день. Время заполнять отчёт для дневной смены. Нажмите "Старт".', reply_markup=await kb.get_start_keyboard())
     except Exception as error:
-        print(f"Ошибка при отправке утреннего уведомления: {error}")
+        print(f"Ошибка при отправке вечернее уведомления: {error}")

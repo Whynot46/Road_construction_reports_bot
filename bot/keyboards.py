@@ -24,15 +24,26 @@ async def get_report_keyboard():
     return report_keyboard
 
 
-def get_quarries_keyboard():
-    quarries_keyboard = ReplyKeyboardMarkup(
+def get_add_material_keyboard():
+    add_material_keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="Добавить материал")],
             [KeyboardButton(text="Перейти к следующему вопросу")]
         ],
         resize_keyboard=True
     )
-    return quarries_keyboard
+    return add_material_keyboard
+
+
+def get_add_work_keyboard():
+    get_add_work_keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Добавить ещё работы")],
+            [KeyboardButton(text="Перейти к следующему вопросу")]
+        ],
+        resize_keyboard=True
+    )
+    return get_add_work_keyboard
 
 
 async def get_skip_keyboard():

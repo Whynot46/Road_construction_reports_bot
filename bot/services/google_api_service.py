@@ -37,7 +37,7 @@ async def delete_local_file(file_path):
     try:
         os.remove(file_path)
     except Exception as error:
-        print(f"Ошибка при удалении файла {file_path}: {error}")
+        print(f"Ошибка при удалении локального файла {file_path}: {error}")
 
 
 async def upload_stage_report(reports_data, user_fullname):
@@ -164,8 +164,14 @@ async def update_projects():
 
 
 async def upload_not_uploaded_reports():
-    not_uploaded_reports = await get_not_uploaded_reports()
-    if not not_uploaded_reports:
-        return
-    for report in not_uploaded_reports:
-        await upload_report(report["report_data"], "БД")
+    try:
+        not_uploaded_reports = await get_not_uploaded_reports()
+        if not not_uploaded_reports:
+            return
+        for report in not_uploaded_reports:
+            if report['report_name'] == 'people_and_equipment_reports':
+                await upload_people_and_equipment_report(report["report_data"], "БД")
+            else:
+                await upload_stage_report(report["report_data"], "БД")
+    except Exception as error:
+        print(f"Ошибка при выгрузке невыгруженнвх отчётов: {error}")

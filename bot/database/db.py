@@ -134,7 +134,8 @@ async def get_not_uploaded_reports() -> list:
         "artificial_structures_reports",
         "road_clothing_reports",
         "asphalt_clothing_reports",
-        "road_devices_reports"
+        "road_devices_reports",
+        "people_and_equipment_reports"
     ]
 
     for table_name in report_tables:

@@ -83,7 +83,8 @@ async def upload_report(reports_data, user_fullname):
         await mark_report_as_uploaded(user_data.get("stage", ""), user_data.get("report_data", ""))
 
     except Exception as error:
-        print(f"Ошибка при добавлении данных в Google Таблицу: {error}")
+        if error != "''":
+            print(f"Ошибка при добавлении данных в Google Таблицу: {error}")
 
 
 async def update_users():

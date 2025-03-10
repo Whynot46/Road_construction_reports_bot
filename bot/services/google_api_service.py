@@ -40,7 +40,7 @@ async def delete_local_file(file_path):
         print(f"Ошибка при удалении файла {file_path}: {error}")
 
 
-async def upload_report(reports_data, user_fullname):
+async def upload_stage_report(reports_data, user_fullname):
     try:
         sheet_name = reports_data.get("stage", "")
 
@@ -51,24 +51,15 @@ async def upload_report(reports_data, user_fullname):
             "shift": reports_data.get("shift", ""),
         }
 
-        people_and_equipment_report = {
-            "date": reports_data.get("date", ""),
-            "people_number":  reports_data["people_number"],
-            "equipment_number": reports_data["equipment_number"]
-        }
-
         # Удаляем ненужные ключи из reports_data
-        keys_to_remove = ["shift", "project", "stage", "is_ok", "people_number", "equipment_number"]
+        keys_to_remove = ["shift", "project", "stage", "is_ok", "report" ]
         for key in keys_to_remove:
             reports_data.pop(key, None)
 
-        values = {**user_data, **reports_data, **people_and_equipment_report}
+        values = {**user_data, **reports_data}
         range_name = f"{sheet_name}!A:Z"
 
-        for key in values:
-            if values[key] == "":
-                values[key] = " "
-
+        print(values)
         body = {
             'values': [list(values.values())]
         }
@@ -80,11 +71,43 @@ async def upload_report(reports_data, user_fullname):
             body=body
         ).execute()
 
-        await mark_report_as_uploaded(user_data.get("stage", ""), user_data.get("report_data", ""))
+        await mark_report_as_uploaded(user_data.get("stage", ""), user_data.get("report_date", ""))
 
     except Exception as error:
         if error != "''":
             print(f"Ошибка при добавлении данных в Google Таблицу: {error}")
+
+
+async def upload_people_and_equipment_report(report_data, user_fullname):
+    user_data = {
+        "report_date": str(datetime.now().strftime("%d.%m.%Y")),
+        "project": report_data.get("project", ""),
+        "fullname": user_fullname,
+        "shift": report_data.get("shift", ""),
+    }
+
+    sheet_name = "Отчёт по количеству людей и техники на объекте"
+    range_name = f"{sheet_name}!A:Z"
+
+    # Удаляем ненужные ключи из report_data
+    keys_to_remove = ["is_ok"]
+    for key in keys_to_remove:
+        report_data.pop(key, None)
+
+    values = {**user_data, **report_data}
+    
+    body = {
+            'values': [list(values.values())]
+        }
+
+    sheets_service.spreadsheets().values().append(
+        spreadsheetId=Config.GOOGLE_REPORTS_FILE_ID,
+        range=range_name,
+        valueInputOption='USER_ENTERED',
+        body=body
+    ).execute()
+
+    await mark_report_as_uploaded(sheet_name, report_data.get("report_date", ""))
 
 
 async def update_users():

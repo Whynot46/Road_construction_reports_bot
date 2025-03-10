@@ -156,7 +156,8 @@ async def mark_report_as_uploaded(report_name: str, create_datetime: str):
         "Искусственные сооружения": "artificial_structures_reports",
         "Дорожная одежда": "road_clothing_reports",
         "Асфальт": "asphalt_clothing_reports",
-        "Дорожные устройства и обстановка дороги": "road_devices_reports"
+        "Дорожные устройства и обстановка дороги": "road_devices_reports",
+        "Отчёт по количеству людей и техники на объекте": "people_and_equipment_reports"
         }
     await db_connection.execute(
         f"""UPDATE {table_names[report_name]} 
@@ -204,7 +205,7 @@ async def add_preparatory_report(user_id, shift, project, create_datetime, route
                                  temporary_construction, quarries_construction, quarries_construction_quantity, cutting_asphalt_area, 
                                  other_works, photo_links, pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, side_stone, 
                                  side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, concrete_mixture, 
-                                 concrete_mixture_quantity, other_material, date, people_number, equipment_number):
+                                 concrete_mixture_quantity, other_material):
     global db_connection
     await db_connection.execute('''
         INSERT INTO preparatory_reports (
@@ -213,14 +214,14 @@ async def add_preparatory_report(user_id, shift, project, create_datetime, route
             temporary_construction, quarries_construction, quarries_construction_quantity, cutting_asphalt_area, 
             other_works, photo_links, pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, side_stone, 
             side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, concrete_mixture, 
-            concrete_mixture_quantity, other_material, date, people_number, equipment_number
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            concrete_mixture_quantity, other_material
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (user_id, shift, project, create_datetime, False, route_breakdown, clearing_way, 
           water_disposal, water_disposal_scope, removal_utility_networks, removal_utility_networks_scope, 
           temporary_construction, quarries_construction, quarries_construction_quantity, cutting_asphalt_area, 
           other_works, str(photo_links), pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, side_stone, 
           side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, concrete_mixture, 
-          concrete_mixture_quantity, other_material, date, people_number, equipment_number))
+          concrete_mixture_quantity, other_material))
     await db_connection.commit()
 
 
@@ -228,8 +229,7 @@ async def add_earthworks_report(user_id, shift, project, create_datetime, detail
                                 excavations_development, excavations_development_quantity, soil_compaction, soil_compaction_quantity, 
                                 final_layout, final_layout_quantity, photo_links, pgs_quantity, crushed_stone_fraction, 
                                 crushed_stone_quantity, side_stone, side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, 
-                                asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material, date, 
-                                people_number, equipment_number):
+                                asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material):
     global db_connection
     await db_connection.execute('''
         INSERT INTO earthworks_reports (
@@ -237,32 +237,32 @@ async def add_earthworks_report(user_id, shift, project, create_datetime, detail
             excavations_development, excavations_development_quantity, soil_compaction, soil_compaction_quantity, 
             final_layout, final_layout_quantity, photo_links, pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, 
             side_stone, side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, 
-            concrete_mixture, concrete_mixture_quantity, other_material, date, people_number, equipment_number
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            concrete_mixture, concrete_mixture_quantity, other_material
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (user_id, shift, project, create_datetime, False, detailed_breakdown, 
           excavations_development, excavations_development_quantity, soil_compaction, soil_compaction_quantity, 
           final_layout, final_layout_quantity, str(photo_links), pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, 
           side_stone, side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, 
-          concrete_mixture, concrete_mixture_quantity, other_material, date, people_number, equipment_number))
+          concrete_mixture, concrete_mixture_quantity, other_material))
     await db_connection.commit()
 
 
 async def add_artificial_structures_report(user_id, shift, project, create_datetime, work_type, work_scope, 
                                            photo_links, pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, side_stone, 
                                            side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, 
-                                           concrete_mixture, concrete_mixture_quantity, other_material, date, people_number, equipment_number):
+                                           concrete_mixture, concrete_mixture_quantity, other_material):
     global db_connection
     await db_connection.execute('''
         INSERT INTO artificial_structures_reports (
             user_id, shift, project, create_datetime, is_uploaded_to_cloud, work_type, work_scope, 
             photo_links, pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, side_stone, 
             side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, 
-            concrete_mixture, concrete_mixture_quantity, other_material, date, people_number, equipment_number
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            concrete_mixture, concrete_mixture_quantity, other_material
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (user_id, shift, project, create_datetime, False, work_type, work_scope, 
           str(photo_links), pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, side_stone, 
           side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, 
-          concrete_mixture, concrete_mixture_quantity, other_material, date, people_number, equipment_number))
+          concrete_mixture, concrete_mixture_quantity, other_material))
     await db_connection.commit()
 
 
@@ -270,7 +270,7 @@ async def add_road_clothing_report(user_id, shift, project, create_datetime, und
                                    additional_layer, additional_layer_area, foundation_construction, foundation_construction_area,
                                    photo_links, pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, side_stone, side_stone_quantity,
                                    ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity,
-                                   other_material, date, people_number, equipment_number):
+                                   other_material):
     global db_connection
     await db_connection.execute('''
         INSERT INTO road_clothing_reports (
@@ -278,13 +278,13 @@ async def add_road_clothing_report(user_id, shift, project, create_datetime, und
             additional_layer, additional_layer_area, foundation_construction, foundation_construction_area, 
             photo_links, pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, side_stone, side_stone_quantity,
             ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity,
-            other_material, date, people_number, equipment_number
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            other_material
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (user_id, shift, project, create_datetime, False, underlying_layer, underlying_layer_area,
           additional_layer, additional_layer_area, foundation_construction, foundation_construction_area,
           str(photo_links), pgs_quantity, crushed_stone_fraction, crushed_stone_quantity, side_stone, side_stone_quantity,
           ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity,
-          other_material, date, people_number, equipment_number))
+          other_material))
     await db_connection.commit()
 
 
@@ -292,8 +292,7 @@ async def add_asphalt_clothing_report(user_id, shift, project, create_datetime, 
                                       installation_primer, installation_primer_area, asphalt_mixture_lower, asphalt_mixture_lower_area,
                                       asphalt_mixture_upper, asphalt_mixture_upper_area, photo_links, pgs_quantity, crushed_stone_fraction,
                                       crushed_stone_quantity, side_stone, side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture,
-                                      asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material, date, people_number,
-                                      equipment_number):
+                                      asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material):
     global db_connection
     await db_connection.execute('''
         INSERT INTO asphalt_clothing_reports (
@@ -301,34 +300,37 @@ async def add_asphalt_clothing_report(user_id, shift, project, create_datetime, 
             installation_primer, installation_primer_area, asphalt_mixture_lower, asphalt_mixture_lower_area,
             asphalt_mixture_upper, asphalt_mixture_upper_area, photo_links, pgs_quantity, crushed_stone_fraction,
             crushed_stone_quantity, side_stone, side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture,
-            asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material, date, people_number,
-            equipment_number
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (user_id, shift, project, create_datetime, False, cleaning_base, cleaning_base_area,
           installation_primer, installation_primer_area, asphalt_mixture_lower, asphalt_mixture_lower_area,
           asphalt_mixture_upper, asphalt_mixture_upper_area, str(photo_links), pgs_quantity, crushed_stone_fraction,
           crushed_stone_quantity, side_stone, side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture, asphalt_concrete_scope,
-          concrete_mixture, concrete_mixture_quantity, other_material, date, people_number, equipment_number))
+          concrete_mixture, concrete_mixture_quantity, other_material))
     await db_connection.commit()
 
 
 async def add_road_devices_report(user_id, shift, project, create_datetime, characters_number,
                                   signal_posts_number, other_works, photo_links, pgs_quantity, crushed_stone_fraction,
                                   crushed_stone_quantity, side_stone, side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture,
-                                  asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material,
-                                  date, people_number, equipment_number):
+                                  asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material):
     global db_connection
     await db_connection.execute('''
         INSERT INTO road_devices_reports (
             user_id, shift, project, create_datetime, is_uploaded_to_cloud, characters_number,
             signal_posts_number, other_works, photo_links, pgs_quantity, crushed_stone_fraction,
                                 crushed_stone_quantity, side_stone, side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture,
-                                asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material,
-                                date, people_number, equipment_number
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (user_id, shift, project, create_datetime, False, characters_number,
           signal_posts_number, other_works, str(photo_links), pgs_quantity, crushed_stone_fraction,
           crushed_stone_quantity, side_stone, side_stone_quantity, ebdc_quantity, asphalt_concrete_mixture,
-          asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material,
-          date, people_number, equipment_number))
+          asphalt_concrete_scope, concrete_mixture, concrete_mixture_quantity, other_material))
+    await db_connection.commit()
+
+
+async def add_people_and_equipment_report(date: str, user_id: int, create_datetime: str, people_number: str, equipment_number: str):
+    global db_connection
+    await db_connection.execute('''INSERT INTO people_and_equipment_reports (user_id, create_datetime, date, people_number, equipment_number) VALUES (?, ?, ?, ?, ?)'''
+                                , (user_id, create_datetime, date, people_number, equipment_number))
     await db_connection.commit()

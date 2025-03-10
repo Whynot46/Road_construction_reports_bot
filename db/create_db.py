@@ -70,9 +70,6 @@ async def create_table():
                 concrete_mixture TEXT,
                 concrete_mixture_quantity FLOAT,
                 other_material TEXT,
-                date TEXT,
-                people_number FLOAT,
-                equipment_number FLOAT,
                 FOREIGN KEY (user_id) REFERENCES users (user_id)
             )
         ''')
@@ -106,9 +103,6 @@ async def create_table():
                 concrete_mixture TEXT,
                 concrete_mixture_quantity FLOAT,
                 other_material TEXT,
-                date TEXT,
-                people_number FLOAT,
-                equipment_number FLOAT,
                 FOREIGN KEY (user_id) REFERENCES users (user_id)
             )
         ''')
@@ -137,9 +131,6 @@ async def create_table():
                 concrete_mixture TEXT,
                 concrete_mixture_quantity FLOAT,
                 other_material TEXT,
-                date TEXT,
-                people_number FLOAT,
-                equipment_number FLOAT,
                 FOREIGN KEY (user_id) REFERENCES users (user_id)
             )
         ''')
@@ -172,9 +163,6 @@ async def create_table():
                 concrete_mixture TEXT,
                 concrete_mixture_quantity FLOAT,
                 other_material TEXT,
-                date TEXT,
-                people_number FLOAT,
-                equipment_number FLOAT,
                 FOREIGN KEY (user_id) REFERENCES users (user_id)
             )
         ''')
@@ -209,9 +197,6 @@ async def create_table():
                 concrete_mixture TEXT,
                 concrete_mixture_quantity FLOAT,
                 other_material TEXT,
-                date TEXT,
-                people_number FLOAT,
-                equipment_number FLOAT,
                 FOREIGN KEY (user_id) REFERENCES users (user_id)
             )
         ''')
@@ -241,10 +226,20 @@ async def create_table():
                 concrete_mixture TEXT,
                 concrete_mixture_quantity FLOAT,
                 other_material TEXT,
-                date TEXT,
-                people_number FLOAT,
-                equipment_number FLOAT,
                 FOREIGN KEY (user_id) REFERENCES users (user_id)
+            )
+        ''')
+
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS people_and_equipment_reports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                create_datetime TEXT NOT NULL,
+                is_uploaded_to_cloud BOOLEAN DEFAULT FALSE,
+                upload_datetime TEXT,
+                date TEXT NOT NULL,
+                people_number TEXT NOT NULL,
+                equipment_number TEXT NOT NULL
             )
         ''')
 

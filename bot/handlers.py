@@ -96,10 +96,25 @@ async def chouse_project(message: Message, state: FSMContext):
 
 @exception_decorator
 @router.message(Construction_projects_steps.project)
-async def chouse_stage(message: Message, state: FSMContext):
+async def chouse_project(message: Message, state: FSMContext):
     await state.update_data(project=message.text)
-    await state.set_state(Construction_projects_steps.stage)
-    await message.answer("Выберите этап работ", reply_markup= await kb.get_stage_keyboard())
+    await state.set_state(Construction_projects_steps.report)
+    await message.answer("Выберите отчёт", reply_markup= await kb.get_report_chouse_keyboard())
+
+
+@exception_decorator
+@router.message(Construction_projects_steps.report)
+async def chouse_stage(message: Message, state: FSMContext):
+    if message.text =="Отчёт по этапу работ":
+        await state.update_data(report=message.text)
+        await state.set_state(Construction_projects_steps.stage)
+        await message.answer("Выберите этап работ", reply_markup= await kb.get_stage_keyboard())
+    elif message.text == "Отчёт по количеству людей и техники на объекте":
+        await state.set_state(People_and_equipment_report_steps.date)
+        await message.answer("Напишите дату  в формате (дд.мм.гг)", reply_markup= await kb.get_skip_keyboard())
+    else:
+        await state.set_state(Construction_projects_steps.report)
+        await message.answer("Необходимо выбрать отчёт из списка", reply_markup= await kb.get_report_chouse_keyboard())
 
 
 @exception_decorator
@@ -1189,9 +1204,166 @@ async def save_material_report(message: Message, state: FSMContext):
         await message.answer("Заполните отчёт по расходу материала на объекте")
         await message.answer("ПГС. Укажите количество тонн.", reply_markup=await kb.get_skip_keyboard())
     elif message.text == "Отправить":
-        await state.set_state(People_and_equipment_report_steps.date)
-        await message.answer("Заполните отчёт по количеству людей и техники на объекте")
-        await message.answer("Напишите дату  в формате (дд.мм.гг)", reply_markup= await kb.get_skip_keyboard())
+        report_data = await state.get_data()
+        if report_data['stage']=="Подготовительные работы":
+            await db.add_preparatory_report(
+                user_id=message.from_user.id,
+                shift=report_data['shift'],
+                project=report_data['project'],
+                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                route_breakdown=report_data['project'],
+                clearing_way=report_data['clearing_way'],
+                water_disposal=report_data['water_disposal'],
+                water_disposal_scope=report_data['water_disposal_scope'],
+                removal_utility_networks=report_data['removal_utility_networks'],
+                removal_utility_networks_scope=report_data['removal_utility_networks_scope'],
+                temporary_construction=report_data['temporary_construction'],
+                quarries_construction=report_data['quarries_construction'],
+                quarries_construction_quantity=report_data['quarries_construction_quantity'],
+                cutting_asphalt_area=report_data['cutting_asphalt_area'],
+                other_works=report_data['other_works'],
+                photo_links=report_data['photo_links'],
+                pgs_quantity=report_data['pgs_quantity'],
+                crushed_stone_fraction=report_data['crushed_stone_fraction'],
+                crushed_stone_quantity=report_data['crushed_stone_quantity'],
+                side_stone=report_data['side_stone'],
+                side_stone_quantity=report_data['side_stone_quantity'],
+                ebdc_quantity=report_data['ebdc_quantity'],
+                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
+                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
+                concrete_mixture=report_data['concrete_mixture'],
+                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
+                other_material=report_data['other_material'],
+                )
+        elif report_data['stage']=="Земляные работы":
+            await db.add_earthworks_report(
+                user_id=message.from_user.id,
+                shift=report_data['shift'],
+                project=report_data['project'],
+                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                detailed_breakdown=report_data['detailed_breakdown'],
+                excavations_development=report_data['excavations_development'],
+                excavations_development_quantity=report_data['excavations_development_quantity'],
+                soil_compaction=report_data['soil_compaction'],
+                soil_compaction_quantity=report_data['soil_compaction_quantity'],
+                final_layout=report_data['final_layout'],
+                final_layout_quantity=report_data['final_layout_quantity'],
+                photo_links=report_data['photo_links'],
+                pgs_quantity=report_data['pgs_quantity'],
+                crushed_stone_fraction=report_data['crushed_stone_fraction'],
+                crushed_stone_quantity=report_data['crushed_stone_quantity'],
+                side_stone=report_data['side_stone'],
+                side_stone_quantity=report_data['side_stone_quantity'],
+                ebdc_quantity=report_data['ebdc_quantity'],
+                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
+                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
+                concrete_mixture=report_data['concrete_mixture'],
+                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
+                other_material=report_data['other_material'],
+            )
+        elif report_data['stage']=="Искусственные сооружения":
+            await db.add_artificial_structures_report(
+                user_id=message.from_user.id,
+                shift=report_data['shift'],
+                project=report_data['project'],
+                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                work_type=report_data['work_type'],
+                work_scope=report_data['work_scope'],
+                photo_links=report_data['photo_links'],
+                pgs_quantity=report_data['pgs_quantity'],
+                crushed_stone_fraction=report_data['crushed_stone_fraction'],
+                crushed_stone_quantity=report_data['crushed_stone_quantity'],
+                side_stone=report_data['side_stone'],
+                side_stone_quantity=report_data['side_stone_quantity'],
+                ebdc_quantity=report_data['ebdc_quantity'],
+                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
+                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
+                concrete_mixture=report_data['concrete_mixture'],
+                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
+                other_material=report_data['other_material'],
+
+            )
+        elif report_data['stage']=="Дорожная одежда":
+            await db.add_road_clothing_report(
+                user_id=message.from_user.id,
+                shift=report_data['shift'],
+                project=report_data['project'],
+                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                underlying_layer=report_data['underlying_layer'],
+                underlying_layer_area=report_data['underlying_layer_area'],
+                additional_layer=report_data['additional_layer'],
+                additional_layer_area=report_data['additional_layer_area'],
+                foundation_construction=report_data['foundation_construction'],
+                foundation_construction_area=report_data['foundation_construction_area'],
+                photo_links=report_data['photo_links'],
+                pgs_quantity=report_data['pgs_quantity'],
+                crushed_stone_fraction=report_data['crushed_stone_fraction'],
+                crushed_stone_quantity=report_data['crushed_stone_quantity'],
+                side_stone=report_data['side_stone'],
+                side_stone_quantity=report_data['side_stone_quantity'],
+                ebdc_quantity=report_data['ebdc_quantity'],
+                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
+                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
+                concrete_mixture=report_data['concrete_mixture'],
+                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
+                other_material=report_data['other_material'],
+            )
+        elif report_data['stage']=="Асфальт":
+            await db.add_asphalt_clothing_report(
+                user_id=message.from_user.id,
+                shift=report_data['shift'],
+                project=report_data['project'],
+                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                cleaning_base=report_data['cleaning_base'],
+                cleaning_base_area=report_data['cleaning_base_area'],
+                installation_primer=report_data['installation_primer'],
+                installation_primer_area=report_data['installation_primer_area'],
+                asphalt_mixture_lower=report_data['asphalt_mixture_lower'],
+                asphalt_mixture_lower_area=report_data['asphalt_mixture_lower_area'],
+                asphalt_mixture_upper=report_data['asphalt_mixture_upper'],
+                asphalt_mixture_upper_area=report_data['asphalt_mixture_upper_area'],
+                photo_links=report_data['photo_links'],
+                pgs_quantity=report_data['pgs_quantity'],
+                crushed_stone_fraction=report_data['crushed_stone_fraction'],
+                crushed_stone_quantity=report_data['crushed_stone_quantity'],
+                side_stone=report_data['side_stone'],
+                side_stone_quantity=report_data['side_stone_quantity'],
+                ebdc_quantity=report_data['ebdc_quantity'],
+                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
+                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
+                concrete_mixture=report_data['concrete_mixture'],
+                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
+                other_material=report_data['other_material'],             
+            )
+        elif report_data['stage']=="Дорожные устройства и обстановка дороги":
+            await db.add_road_devices_report(
+                user_id=message.from_user.id,
+                shift=report_data['shift'],
+                project=report_data['project'],
+                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                characters_number=report_data['characters_number'],
+                signal_posts_number=report_data['signal_posts_number'],
+                other_works=report_data['other_works'],
+                photo_links=report_data['photo_links'],
+                pgs_quantity=report_data['pgs_quantity'],
+                crushed_stone_fraction=report_data['crushed_stone_fraction'],
+                crushed_stone_quantity=report_data['crushed_stone_quantity'],
+                side_stone=report_data['side_stone'],
+                side_stone_quantity=report_data['side_stone_quantity'],
+                ebdc_quantity=report_data['ebdc_quantity'],
+                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
+                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
+                concrete_mixture=report_data['concrete_mixture'],
+                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
+                other_material=report_data['other_material'], 
+            )
+
+        user_fullname = await db.get_fullname(message.from_user.id)
+        await google_disk.upload_stage_report(report_data, user_fullname)
+        for id in Config.ADMIN_IDS:
+            await message.bot.send_message(id, f"{user_fullname} отправил отчёт")
+        await state.clear()
+        await message.answer("Поздравляем! Все отчёты приняты!", reply_markup= await kb.get_main_menu_keyboard())
     else:
         await state.set_state(Material_consumption_report_steps.is_ok)
         await message.answer("Неизвестная команда", reply_markup=await kb.get_report_keyboard())
@@ -1234,7 +1406,6 @@ async def set_equipment_number(message: Message, state: FSMContext, message_text
         await message.answer(f"Отчет по количеству людей и техники на объекте:\n\n"
                             f"Смена: {report_data['shift']}\n"
                             f"Объект: {report_data['project']}\n"
-                            f"Этап работ: {report_data['stage']}\n"
                             f"Дата: {report_data['date']}\n"
                             f"Количество людей на объекте: {report_data['people_number']}\n"
                             f"Количество техники на объекте: {report_data['equipment_number']}\n"
@@ -1253,191 +1424,19 @@ async def save_reports(message: Message, state: FSMContext):
         await message.answer("Сколько людей на объекте?", reply_markup= await kb.get_skip_keyboard())
     elif message.text == "Отправить":
         report_data = await state.get_data()
-        if report_data['stage']=="Подготовительные работы":
-            await db.add_preparatory_report(
-                user_id=message.from_user.id,
-                shift=report_data['shift'],
-                project=report_data['project'],
-                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                route_breakdown=report_data['project'],
-                clearing_way=report_data['clearing_way'],
-                water_disposal=report_data['water_disposal'],
-                water_disposal_scope=report_data['water_disposal_scope'],
-                removal_utility_networks=report_data['removal_utility_networks'],
-                removal_utility_networks_scope=report_data['removal_utility_networks_scope'],
-                temporary_construction=report_data['temporary_construction'],
-                quarries_construction=report_data['quarries_construction'],
-                quarries_construction_quantity=report_data['quarries_construction_quantity'],
-                cutting_asphalt_area=report_data['cutting_asphalt_area'],
-                other_works=report_data['other_works'],
-                photo_links=report_data['photo_links'],
-                pgs_quantity=report_data['pgs_quantity'],
-                crushed_stone_fraction=report_data['crushed_stone_fraction'],
-                crushed_stone_quantity=report_data['crushed_stone_quantity'],
-                side_stone=report_data['side_stone'],
-                side_stone_quantity=report_data['side_stone_quantity'],
-                ebdc_quantity=report_data['ebdc_quantity'],
-                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
-                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
-                concrete_mixture=report_data['concrete_mixture'],
-                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
-                other_material=report_data['other_material'],
-                date=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                people_number=report_data['people_number'],
-                equipment_number=report_data['equipment_number']
-                )
-        elif report_data['stage']=="Земляные работы":
-            await db.add_earthworks_report(
-                user_id=message.from_user.id,
-                shift=report_data['shift'],
-                project=report_data['project'],
-                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                detailed_breakdown=report_data['detailed_breakdown'],
-                excavations_development=report_data['excavations_development'],
-                excavations_development_quantity=report_data['excavations_development_quantity'],
-                soil_compaction=report_data['soil_compaction'],
-                soil_compaction_quantity=report_data['soil_compaction_quantity'],
-                final_layout=report_data['final_layout'],
-                final_layout_quantity=report_data['final_layout_quantity'],
-                photo_links=report_data['photo_links'],
-                pgs_quantity=report_data['pgs_quantity'],
-                crushed_stone_fraction=report_data['crushed_stone_fraction'],
-                crushed_stone_quantity=report_data['crushed_stone_quantity'],
-                side_stone=report_data['side_stone'],
-                side_stone_quantity=report_data['side_stone_quantity'],
-                ebdc_quantity=report_data['ebdc_quantity'],
-                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
-                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
-                concrete_mixture=report_data['concrete_mixture'],
-                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
-                other_material=report_data['other_material'],
-                date=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                people_number=report_data['people_number'],
-                equipment_number=report_data['equipment_number']
+        await db.add_people_and_equipment_report(
+            user_id=message.from_user.id,
+            create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+            date=report_data["date"],
+            people_number=report_data["people_number"],
+            equipment_number=report_data["equipment_number"]
             )
-        elif report_data['stage']=="Искусственные сооружения":
-            await db.add_artificial_structures_report(
-                user_id=message.from_user.id,
-                shift=report_data['shift'],
-                project=report_data['project'],
-                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                work_type=report_data['work_type'],
-                work_scope=report_data['work_scope'],
-                photo_links=report_data['photo_links'],
-                pgs_quantity=report_data['pgs_quantity'],
-                crushed_stone_fraction=report_data['crushed_stone_fraction'],
-                crushed_stone_quantity=report_data['crushed_stone_quantity'],
-                side_stone=report_data['side_stone'],
-                side_stone_quantity=report_data['side_stone_quantity'],
-                ebdc_quantity=report_data['ebdc_quantity'],
-                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
-                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
-                concrete_mixture=report_data['concrete_mixture'],
-                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
-                other_material=report_data['other_material'],
-                date=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                people_number=report_data['people_number'],
-                equipment_number=report_data['equipment_number']
-            )
-        elif report_data['stage']=="Дорожная одежда":
-            await db.add_road_clothing_report(
-                user_id=message.from_user.id,
-                shift=report_data['shift'],
-                project=report_data['project'],
-                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                underlying_layer=report_data['underlying_layer'],
-                underlying_layer_area=report_data['underlying_layer_area'],
-                additional_layer=report_data['additional_layer'],
-                additional_layer_area=report_data['additional_layer_area'],
-                foundation_construction=report_data['foundation_construction'],
-                foundation_construction_area=report_data['foundation_construction_area'],
-                photo_links=report_data['photo_links'],
-                pgs_quantity=report_data['pgs_quantity'],
-                crushed_stone_fraction=report_data['crushed_stone_fraction'],
-                crushed_stone_quantity=report_data['crushed_stone_quantity'],
-                side_stone=report_data['side_stone'],
-                side_stone_quantity=report_data['side_stone_quantity'],
-                ebdc_quantity=report_data['ebdc_quantity'],
-                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
-                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
-                concrete_mixture=report_data['concrete_mixture'],
-                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
-                other_material=report_data['other_material'],
-                date=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                people_number=report_data['people_number'],
-                equipment_number=report_data['equipment_number']
-            )
-        elif report_data['stage']=="Асфальт":
-            await db.add_asphalt_clothing_report(
-                user_id=message.from_user.id,
-                shift=report_data['shift'],
-                project=report_data['project'],
-                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                cleaning_base=report_data['cleaning_base'],
-                cleaning_base_area=report_data['cleaning_base_area'],
-                installation_primer=report_data['installation_primer'],
-                installation_primer_area=report_data['installation_primer_area'],
-                asphalt_mixture_lower=report_data['asphalt_mixture_lower'],
-                asphalt_mixture_lower_area=report_data['asphalt_mixture_lower_area'],
-                asphalt_mixture_upper=report_data['asphalt_mixture_upper'],
-                asphalt_mixture_upper_area=report_data['asphalt_mixture_upper_area'],
-                photo_links=report_data['photo_links'],
-                pgs_quantity=report_data['pgs_quantity'],
-                crushed_stone_fraction=report_data['crushed_stone_fraction'],
-                crushed_stone_quantity=report_data['crushed_stone_quantity'],
-                side_stone=report_data['side_stone'],
-                side_stone_quantity=report_data['side_stone_quantity'],
-                ebdc_quantity=report_data['ebdc_quantity'],
-                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
-                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
-                concrete_mixture=report_data['concrete_mixture'],
-                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
-                other_material=report_data['other_material'],
-                date=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                people_number=report_data['people_number'],
-                equipment_number=report_data['equipment_number']                
-            )
-        elif report_data['stage']=="Дорожные устройства и обстановка дороги":
-            await db.add_road_devices_report(
-                user_id=message.from_user.id,
-                shift=report_data['shift'],
-                project=report_data['project'],
-                create_datetime=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                characters_number=report_data['characters_number'],
-                signal_posts_number=report_data['signal_posts_number'],
-                other_works=report_data['other_works'],
-                photo_links=report_data['photo_links'],
-                pgs_quantity=report_data['pgs_quantity'],
-                crushed_stone_fraction=report_data['crushed_stone_fraction'],
-                crushed_stone_quantity=report_data['crushed_stone_quantity'],
-                side_stone=report_data['side_stone'],
-                side_stone_quantity=report_data['side_stone_quantity'],
-                ebdc_quantity=report_data['ebdc_quantity'],
-                asphalt_concrete_mixture=report_data['asphalt_concrete_mixture'],
-                asphalt_concrete_scope=report_data['asphalt_concrete_scope'],
-                concrete_mixture=report_data['concrete_mixture'],
-                concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
-                other_material=report_data['other_material'],
-                date=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                people_number=report_data['people_number'],
-                equipment_number=report_data['equipment_number']    
-            )
-
         user_fullname = await db.get_fullname(message.from_user.id)
-        await google_disk.upload_report(report_data, user_fullname)
+        await google_disk.upload_people_and_equipment_report(report_data, user_fullname)
         for id in Config.ADMIN_IDS:
             await message.bot.send_message(id, f"{user_fullname} отправил отчёт")
         await state.clear()
-        await message.answer("Поздравляем! Все отчёты приняты!", reply_markup= await kb.get_main_menu_keyboard())
-    else:
-        await state.set_state(Material_consumption_report_steps.is_ok)
-        await message.answer("Неизвестная команда", reply_markup=await kb.get_report_keyboard())
-    
-
-@exception_decorator
-@router.callback_query(F.data)
-async def track_callback(callback: CallbackQuery, bot: Bot):
-    pass
+        await message.answer("Поздравляем! Отчёт принят!", reply_markup= await kb.get_main_menu_keyboard())
 
 
 @exception_decorator

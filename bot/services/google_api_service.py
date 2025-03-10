@@ -59,7 +59,10 @@ async def upload_stage_report(reports_data, user_fullname):
         values = {**user_data, **reports_data}
         range_name = f"{sheet_name}!A:Z"
 
-        print(values)
+        for key in values:
+            if values[key] == "":
+                values[key] == "-"
+
         body = {
             'values': [list(values.values())]
         }
@@ -74,40 +77,46 @@ async def upload_stage_report(reports_data, user_fullname):
         await mark_report_as_uploaded(user_data.get("stage", ""), user_data.get("report_date", ""))
 
     except Exception as error:
-        if error != "''":
-            print(f"Ошибка при добавлении данных в Google Таблицу: {error}")
+        print(f"Ошибка при добавлении данных в Google Таблицу: {error}")
 
 
 async def upload_people_and_equipment_report(report_data, user_fullname):
-    user_data = {
-        "report_date": str(datetime.now().strftime("%d.%m.%Y")),
-        "project": report_data.get("project", ""),
-        "fullname": user_fullname,
-        "shift": report_data.get("shift", ""),
-    }
-
-    sheet_name = "Отчёт по количеству людей и техники на объекте"
-    range_name = f"{sheet_name}!A:Z"
-
-    # Удаляем ненужные ключи из report_data
-    keys_to_remove = ["is_ok"]
-    for key in keys_to_remove:
-        report_data.pop(key, None)
-
-    values = {**user_data, **report_data}
-    
-    body = {
-            'values': [list(values.values())]
+    try:
+        user_data = {
+            "report_date": str(datetime.now().strftime("%d.%m.%Y")),
+            "project": report_data.get("project", ""),
+            "fullname": user_fullname,
+            "shift": report_data.get("shift", ""),
         }
 
-    sheets_service.spreadsheets().values().append(
-        spreadsheetId=Config.GOOGLE_REPORTS_FILE_ID,
-        range=range_name,
-        valueInputOption='USER_ENTERED',
-        body=body
-    ).execute()
+        sheet_name = "Отчёт по количеству людей и техники на объекте"
+        range_name = f"{sheet_name}!A:Z"
 
-    await mark_report_as_uploaded(sheet_name, report_data.get("report_date", ""))
+        # Удаляем ненужные ключи из report_data
+        keys_to_remove = ["is_ok"]
+        for key in keys_to_remove:
+            report_data.pop(key, None)
+
+        values = {**user_data, **report_data}
+
+        for key in values:
+            if values[key] == "":
+                values[key] == "-"
+        
+        body = {
+                'values': [list(values.values())]
+            }
+
+        sheets_service.spreadsheets().values().append(
+            spreadsheetId=Config.GOOGLE_REPORTS_FILE_ID,
+            range=range_name,
+            valueInputOption='USER_ENTERED',
+            body=body
+        ).execute()
+
+        await mark_report_as_uploaded(sheet_name, report_data.get("report_date", ""))
+    except Exception as error:
+        print(f"Ошибка при добавлении данных в Google Таблицу: {error}")
 
 
 async def update_users():

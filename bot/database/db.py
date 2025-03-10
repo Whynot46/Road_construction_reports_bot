@@ -77,7 +77,7 @@ async def get_fullname(user_id : int) -> str:
         return None
 
 
-# Проверка, зарегистрирован ли пользователь
+# Проверка, зарегистрирован ли пользователь по user_id
 async def is_old(user_id):
     global db_connection
     cursor = await db_connection.execute("SELECT 1 FROM users WHERE user_id = ?", (user_id,))
@@ -91,6 +91,15 @@ async def is_user_active(user_id : int):
     cursor = await db_connection.execute("SELECT 1 FROM users WHERE user_id = ? AND is_active = 1", (user_id,))
     result = await cursor.fetchone()
     return bool(result)
+
+
+#Проверка, зарегистрирован ли пользователь по ФИО
+async def is_register(firstname: str, middlename: str, lastname: str):
+    global db_connection
+    cursor = await db_connection.execute("SELECT 1 FROM users WHERE firstname = ? AND middlename= ? AND lastname= ?", (firstname, middlename, lastname))
+    result = await cursor.fetchone()
+    return bool(result)
+
 
 
 #Получить все объекты (проекты дорожно-строительной компании)

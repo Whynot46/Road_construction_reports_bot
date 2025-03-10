@@ -59,8 +59,8 @@ async def get_shift_keyboard():
 
 async def get_report_chouse_keyboard():
     report_chouse_keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(text='Отчёт по этапу работ'),
-        KeyboardButton(text='Отчёт по количеству людей и техники на объекте')]
+        [KeyboardButton(text='Отчёт по этапу работ')],
+        [KeyboardButton(text='Отчёт по количеству людей и техники на объекте')]
         ], resize_keyboard=True)
     return report_chouse_keyboard
 

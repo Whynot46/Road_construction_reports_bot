@@ -27,11 +27,29 @@ async def update_user_id(user_id : int, firstname : str, middlename : str, lastn
     
 
 #Обновить статусы всех пользователей    
-async def update_all_user_status(user_data : dict):
+async def update_users(user_data: dict):
     global db_connection
     if not user_data:
         return
 
+    # Получаем список всех пользователей из базы данных
+    cursor = await db_connection.execute("SELECT firstname, middlename, lastname FROM users")
+    existing_users = await cursor.fetchall()
+    existing_users = [f"{user[2]} {user[0]} {user[1]}" for user in existing_users]  # Форматируем ФИО в строку
+
+    # Список ФИО из онлайн-таблицы
+    online_users = [employee["ФИО сотрудника"] for employee in user_data]
+
+    # Удаляем пользователей, которых нет в онлайн-таблице
+    for user in existing_users:
+        if user not in online_users:
+            lastname, firstname, middlename = user.split(" ")
+            await db_connection.execute(
+                "DELETE FROM users WHERE firstname = ? AND middlename = ? AND lastname = ?",
+                (firstname, middlename, lastname)
+            )
+
+    # Обновляем статусы существующих пользователей и добавляем новых
     for employee in user_data:
         full_name = employee["ФИО сотрудника"]
         status = employee["Статус"]
@@ -47,13 +65,17 @@ async def update_all_user_status(user_data : dict):
         existing_user = await cursor.fetchone()
 
         if existing_user:
+            # Обновляем статус существующего пользователя
             await db_connection.execute(
                 "UPDATE users SET is_active = ? WHERE user_id = ?",
-                (is_active, existing_user[0]))
+                (is_active, existing_user[0])
+            )
         else:
+            # Создаем нового пользователя
             await db_connection.execute(
                 "INSERT INTO users (firstname, middlename, lastname, is_active) VALUES (?, ?, ?, ?)",
-                (firstname, middlename, lastname, is_active))
+                (firstname, middlename, lastname, is_active)
+            )
 
     await db_connection.commit()
     

@@ -5,7 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from bot.handlers import router, send_morning_notification, send_evening_notification
 from bot.config import Config
-from bot.database.db import init_db
+from bot.db import init_db
 from bot.services.google_api_service import update_users, update_projects, upload_not_uploaded_reports
 
 
@@ -31,7 +31,7 @@ async def main():
         )
         scheduler.add_job(
             func=update_users,
-            trigger=CronTrigger(hour="*", minute=0, timezone="Europe/Moscow"),  # Каждый час в 0 минут
+            trigger=CronTrigger(minute="*", timezone="Europe/Moscow"),  # Каждый час в 0 минут
             id="update_users"
         )
         scheduler.add_job(

@@ -1,5 +1,5 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
-import bot.database.db as db
+import bot.db as db
 
 async def get_main_menu_keyboard():
     main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[

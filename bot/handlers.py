@@ -4,7 +4,7 @@ from aiogram.types import Message
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 import bot.keyboards as kb
-import bot.database.db as db
+import bot.db as db
 import bot.services.google_api_service as google_disk
 from bot.states import *
 from bot.config import Config
@@ -43,6 +43,8 @@ def exception_decorator(func):
             return await func(message, state, *args, **kwargs)
         except Exception as error:
             print(f"Ошибка при выполнении {func.__name__}: {error}")
+            # Можно также отправить сообщение пользователю
+            await message.answer("Произошла ошибка. Пожалуйста, попробуйте ещё раз.")
     return wrapper
 
 
@@ -81,13 +83,18 @@ async def start_loop(message: Message, state: FSMContext):
 async def registration(message: Message, state: FSMContext):
     await state.update_data(fullname=message.text)
     register_data = await state.get_data()
-    lastname, firstname, middlename = (register_data["fullname"]).split(" ")
-    if await db.is_register(firstname, middlename, lastname):
-        await db.update_user_id(message.from_user.id, firstname, middlename, lastname)
-        await message.answer(f"Приветствую Вас, {register_data['fullname']}!", reply_markup=await kb.get_main_menu_keyboard())
-        await state.clear()
+    if len((register_data["fullname"]).split(" "))==3:
+        lastname, firstname, middlename = (register_data["fullname"]).split(" ")
+        if await db.is_register(firstname, middlename, lastname):
+            await db.update_user_id(message.from_user.id, firstname, middlename, lastname)
+            await message.answer(f"Приветствую Вас, {register_data['fullname']}!", reply_markup=await kb.get_main_menu_keyboard())
+            await state.clear()
+        else:
+            await message.answer("Данный пользователь не зарегистрирован")
     else:
-        await message.answer("Данный пользователь не зарегистрирован")
+        await message.answer("Некорректный формат ФИО!")
+        await state.set_state(Register_steps.fullname)
+        await message.answer("Введи своё ФИО:")
 
 
 @exception_decorator
@@ -121,6 +128,7 @@ async def chouse_stage(message: Message, state: FSMContext):
         await state.set_state(Construction_projects_steps.stage)
         await message.answer("Выберите этап работ", reply_markup=await kb.get_stage_keyboard())
     elif message.text == "Отчёт по количеству людей и техники на объекте":
+        await state.update_data(report=message.text)
         await state.set_state(People_and_equipment_report_steps.date)
         await message.answer("Напишите дату в формате (дд.мм.гг)", reply_markup=await kb.get_skip_keyboard())
     else:
@@ -250,12 +258,16 @@ async def set_temporary_construction(message: Message, state: FSMContext, messag
 @handle_none_work
 async def set_quarries_construction(message: Message, state: FSMContext, message_text: str):
     data = await state.get_data()
-    if "quarries_construction" not in data or data["quarries_construction"] == "":
-        await state.update_data(quarries_construction=message_text)
+    if message_text!="":
+        if "quarries_construction" not in data or data["quarries_construction"] == "":
+            await state.update_data(quarries_construction=message_text)
+        else:
+            await state.update_data(quarries_construction=data["quarries_construction"] + "\n" + message_text)
+        await state.set_state(Preparatory_steps.quarries_construction_quantity)
+        await message.answer("Устройство карьеров и резервов. Укажите количество в тоннах.", reply_markup=await kb.get_none_work_keyboard())
     else:
-        await state.update_data(quarries_construction=data["quarries_construction"] + "\n" + message_text)
-    await state.set_state(Preparatory_steps.quarries_construction_quantity)
-    await message.answer("Устройство карьеров и резервов. Укажите количество в тоннах.", reply_markup=await kb.get_none_work_keyboard())
+        await state.set_state(Preparatory_steps.cutting_asphalt_area)
+        await message.answer("Срезка асфальтобетонного покрытия методом холодного фрезерования. Укажите площадь в м².", reply_markup=await kb.get_none_work_keyboard())
 
 
 @exception_decorator
@@ -335,29 +347,33 @@ async def set_preparatory_photo(message: Message, state: FSMContext, bot: Bot):
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
             await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
-        files_url_str = "\n".join(files_url)
+            
+        if files_url:
+            files_url_str = "\n".join(files_url)
 
-        await state.update_data(photo_links=files_url_str)
+            await state.update_data(photo_links=files_url_str)
 
-        report_data = await state.get_data()
-        await message.answer("✅Фото успешно загружены!")
-        await state.set_state(Preparatory_steps.is_ok)
-        await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
-                            f"Смена: {report_data['shift']}\n"
-                            f"Объект: {report_data['project']}\n"
-                            f"Разбивка трассы. Количество км.: {report_data['route_breakdown']}\n"
-                            f"Расчистка полосы отвода. Количество км.: {report_data['clearing_way']}\n"
-                            f"Водоотведение и временное водопонижение. Вид работ: {report_data['water_disposal']}\n"
-                            f"Водоотведение и временное водопонижение. Объем работ: {report_data['water_disposal_scope']}\n"
-                            f"Вынос инженерных сетей и снос зданий и сооружений. Вид работ: {report_data['removal_utility_networks']}\n"
-                            f"Вынос инженерных сетей и снос зданий и сооружений. Объем работ: {report_data['removal_utility_networks_scope']}\n"
-                            f"Устройство временных автодорог и объездов. Количество км.: {report_data['temporary_construction']}\n"
-                            f"Устройство карьеров и резервов. Материал: {report_data['quarries_construction']}\n"
-                            f"Устройство карьеров и резервов. Количество в тоннах: {report_data['quarries_construction_quantity']}\n"
-                            f"Срезка асфальтобетонного покрытия методом холодного фрезерования. Площадь в м²: {report_data['cutting_asphalt_area']}\n"
-                            f"Другие работы: Площадь в м²: {report_data['other_works']}\n"
-                            f"Ссылки на фото:\n{report_data['photo_links']}\n"
-                            , reply_markup=await kb.get_report_keyboard())
+            report_data = await state.get_data()
+            await message.answer("✅Фото успешно загружены!")
+            await state.set_state(Preparatory_steps.is_ok)
+            await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
+                                f"Смена: {report_data['shift']}\n"
+                                f"Объект: {report_data['project']}\n"
+                                f"Разбивка трассы. Количество км.: {report_data['route_breakdown']}\n"
+                                f"Расчистка полосы отвода. Количество км.: {report_data['clearing_way']}\n"
+                                f"Водоотведение и временное водопонижение. Вид работ: {report_data['water_disposal']}\n"
+                                f"Водоотведение и временное водопонижение. Объем работ: {report_data['water_disposal_scope']}\n"
+                                f"Вынос инженерных сетей и снос зданий и сооружений. Вид работ: {report_data['removal_utility_networks']}\n"
+                                f"Вынос инженерных сетей и снос зданий и сооружений. Объем работ: {report_data['removal_utility_networks_scope']}\n"
+                                f"Устройство временных автодорог и объездов. Количество км.: {report_data['temporary_construction']}\n"
+                                f"Устройство карьеров и резервов. Материал: {report_data['quarries_construction']}\n"
+                                f"Устройство карьеров и резервов. Количество в тоннах: {report_data['quarries_construction_quantity']}\n"
+                                f"Срезка асфальтобетонного покрытия методом холодного фрезерования. Площадь в м²: {report_data['cutting_asphalt_area']}\n"
+                                f"Другие работы: Площадь в м²: {report_data['other_works']}\n"
+                                f"Ссылки на фото:\n{report_data['photo_links']}\n"
+                                , reply_markup=await kb.get_report_keyboard())
+        else:
+            await message.answer("Ошибка при загрузке фото в облако. Пожалуйста, попробуйте ещё раз.")
     else:
         await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
 
@@ -514,25 +530,28 @@ async def set_earthworks_photo(message: Message, state: FSMContext, bot: Bot):
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
             await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
-        files_url_str = "\n".join(files_url)
+            
+        if files_url:
+            files_url_str = "\n".join(files_url)
+            await state.update_data(photo_links=files_url_str)
 
-        await state.update_data(photo_links=files_url_str)
-
-        report_data = await state.get_data()
-        await message.answer("✅Фото успешно загружены!")
-        await state.set_state(Earthworks_steps.is_ok)
-        await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
-                            f"Смена: {report_data['shift']}\n"
-                            f"Объект: {report_data['project']}\n"
-                            f"Детальная разбивка элементов дороги и подготовка основания. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['detailed_breakdown']}\n"
-                            f"Разработка выемок и возведение насыпей. Вид работ: {report_data['excavations_development']}\n"
-                            f"Разработка выемок и возведение насыпей. Количество в м³: {report_data['excavations_development_quantity']}\n"
-                            f"Уплотнение грунта. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['soil_compaction']}\n"
-                            f"Уплотнение грунта. Количество в м³: {report_data['soil_compaction_quantity']}\n"
-                            f"Окончательная планировка. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['final_layout']}\n"
-                            f"Окончательная планировка. Количество в м2: {report_data['final_layout_quantity']}\n"
-                            f"Ссылки на фото:\n{report_data['photo_links']}\n"
-                            , reply_markup=await kb.get_report_keyboard())
+            report_data = await state.get_data()
+            await message.answer("✅Фото успешно загружены!")
+            await state.set_state(Earthworks_steps.is_ok)
+            await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
+                                f"Смена: {report_data['shift']}\n"
+                                f"Объект: {report_data['project']}\n"
+                                f"Детальная разбивка элементов дороги и подготовка основания. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['detailed_breakdown']}\n"
+                                f"Разработка выемок и возведение насыпей. Вид работ: {report_data['excavations_development']}\n"
+                                f"Разработка выемок и возведение насыпей. Количество в м³: {report_data['excavations_development_quantity']}\n"
+                                f"Уплотнение грунта. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['soil_compaction']}\n"
+                                f"Уплотнение грунта. Количество в м³: {report_data['soil_compaction_quantity']}\n"
+                                f"Окончательная планировка. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['final_layout']}\n"
+                                f"Окончательная планировка. Количество в м2: {report_data['final_layout_quantity']}\n"
+                                f"Ссылки на фото:\n{report_data['photo_links']}\n"
+                                , reply_markup=await kb.get_report_keyboard())
+        else:
+            await message.answer("Ошибка при загрузке фото в облако. Пожалуйста, попробуйте ещё раз.")
 
     else:
         await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
@@ -619,20 +638,23 @@ async def set_artificial_structures_photo(message: Message, state: FSMContext, b
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
             await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
-        files_url_str = "\n".join(files_url)
+            
+        if files_url:
+            files_url_str = "\n".join(files_url)
+            await state.update_data(photo_links=files_url_str)
 
-        await state.update_data(photo_links=files_url_str)
-
-        report_data = await state.get_data()
-        await message.answer("✅Фото успешно загружены!")
-        await state.set_state(Artificial_structures_steps.is_ok)
-        await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
-                            f"Смена: {report_data['shift']}\n"
-                            f"Объект: {report_data['project']}\n"
-                            f"Вид работ: {report_data['work_type']}\n"
-                            f"Объем работ: {report_data['work_scope']}\n"
-                            f"Ссылки на фото:\n{report_data['photo_links']}\n"
-                            , reply_markup=await kb.get_report_keyboard())
+            report_data = await state.get_data()
+            await message.answer("✅Фото успешно загружены!")
+            await state.set_state(Artificial_structures_steps.is_ok)
+            await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
+                                f"Смена: {report_data['shift']}\n"
+                                f"Объект: {report_data['project']}\n"
+                                f"Вид работ: {report_data['work_type']}\n"
+                                f"Объем работ: {report_data['work_scope']}\n"
+                                f"Ссылки на фото:\n{report_data['photo_links']}\n"
+                                , reply_markup=await kb.get_report_keyboard())
+        else:
+            await message.answer("Ошибка при загрузке фото в облако. Пожалуйста, попробуйте ещё раз.")
 
     else:
         await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
@@ -769,25 +791,28 @@ async def set_road_clothing_photo(message: Message, state: FSMContext, bot: Bot)
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
             await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
-        files_url_str = "\n".join(files_url)
+            
+        if files_url:
+            files_url_str = "\n".join(files_url)
 
-        await state.update_data(photo_links=files_url_str)
+            await state.update_data(photo_links=files_url_str)
 
-        report_data = await state.get_data()
-        await message.answer("✅Фото успешно загружены!")
-        await state.set_state(Road_clothing_steps.is_ok)
-        await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
-                            f"Смена: {report_data['shift']}\n"
-                            f"Объект: {report_data['project']}\n"
-                            f"Подстилающий слой из песка. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['underlying_layer']}\n"
-                            f"Подстилающий слой из песка. Количество площадь/толщина: {report_data['underlying_layer_area']}\n"
-                            f"Дополнительный слой из ПГС. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['additional_layer']}\n"
-                            f"Дополнительный слой из ПГС. Количество площадь/толщина.: {report_data['additional_layer_area']}\n"
-                            f"Устройство основания из щебня. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['foundation_construction']}\n"
-                            f"Устройство основания из щебня. Количество площадь/толщина.: {report_data['foundation_construction_area']}\n"
-                            f"Ссылки на фото:\n{report_data['photo_links']}\n"
-                            , reply_markup=await kb.get_report_keyboard())
-
+            report_data = await state.get_data()
+            await message.answer("✅Фото успешно загружены!")
+            await state.set_state(Road_clothing_steps.is_ok)
+            await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
+                                f"Смена: {report_data['shift']}\n"
+                                f"Объект: {report_data['project']}\n"
+                                f"Подстилающий слой из песка. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['underlying_layer']}\n"
+                                f"Подстилающий слой из песка. Количество площадь/толщина: {report_data['underlying_layer_area']}\n"
+                                f"Дополнительный слой из ПГС. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['additional_layer']}\n"
+                                f"Дополнительный слой из ПГС. Количество площадь/толщина.: {report_data['additional_layer_area']}\n"
+                                f"Устройство основания из щебня. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['foundation_construction']}\n"
+                                f"Устройство основания из щебня. Количество площадь/толщина.: {report_data['foundation_construction_area']}\n"
+                                f"Ссылки на фото:\n{report_data['photo_links']}\n"
+                                , reply_markup=await kb.get_report_keyboard())
+        else:
+            await message.answer("Ошибка при загрузке фото в облако. Пожалуйста, попробуйте ещё раз.")
     else:
         await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
 
@@ -954,26 +979,29 @@ async def set_asphalt_photo(message: Message, state: FSMContext, bot: Bot):
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
             await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
-        files_url_str = "\n".join(files_url)
+        
+        if files_url:
+            files_url_str = "\n".join(files_url)
+            await state.update_data(photo_links=files_url_str)
 
-        await state.update_data(photo_links=files_url_str)
-
-        report_data = await state.get_data()
-        await message.answer("✅Фото успешно загружены!")
-        await state.set_state(Asphalt_steps.is_ok)
-        await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
-                            f"Смена: {report_data['shift']}\n"
-                            f"Объект: {report_data['project']}\n"
-                            f"Очистка основания от пыли и грязи механизированным способом. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['cleaning_base']}\n"
-                            f"Очистка основания от пыли и грязи механизированным способом. Количество м2: {report_data['cleaning_base_area']}\n"
-                            f"Устройство битумной эмульсионной подгрунтовки. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['installation_primer']}\n"
-                            f"Устройство битумной эмульсионной подгрунтовки. Количество м2: {report_data['installation_primer_area']}\n"
-                            f"Укладка асфальтобетонной смеси. Нижний слой. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['asphalt_mixture_lower']}\n"
-                            f"Укладка асфальтобетонной смеси. Нижний слой. Количество площадь/толщина: {report_data['asphalt_mixture_lower_area']}\n"
-                            f"Укладка асфальтобетонной смеси. Верхний слой. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['asphalt_mixture_upper']}\n"
-                            f"Укладка асфальтобетонной смеси. Верхний слой. Количество площадь/толщина: {report_data['asphalt_mixture_upper_area']}\n"
-                            f"Ссылки на фото:\n{report_data['photo_links']}\n"
-                            , reply_markup=await kb.get_report_keyboard())
+            report_data = await state.get_data()
+            await message.answer("✅Фото успешно загружены!")
+            await state.set_state(Asphalt_steps.is_ok)
+            await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
+                                f"Смена: {report_data['shift']}\n"
+                                f"Объект: {report_data['project']}\n"
+                                f"Очистка основания от пыли и грязи механизированным способом. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['cleaning_base']}\n"
+                                f"Очистка основания от пыли и грязи механизированным способом. Количество м2: {report_data['cleaning_base_area']}\n"
+                                f"Устройство битумной эмульсионной подгрунтовки. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['installation_primer']}\n"
+                                f"Устройство битумной эмульсионной подгрунтовки. Количество м2: {report_data['installation_primer_area']}\n"
+                                f"Укладка асфальтобетонной смеси. Нижний слой. С какого ПК по какой ПК в формате: 1+00-2+00: {report_data['asphalt_mixture_lower']}\n"
+                                f"Укладка асфальтобетонной смеси. Нижний слой. Количество площадь/толщина: {report_data['asphalt_mixture_lower_area']}\n"
+                                f"Укладка асфальтобетонной смеси. Верхний слой. С какого ПК по какой ПК в формате: 1+00-2+00.: {report_data['asphalt_mixture_upper']}\n"
+                                f"Укладка асфальтобетонной смеси. Верхний слой. Количество площадь/толщина: {report_data['asphalt_mixture_upper_area']}\n"
+                                f"Ссылки на фото:\n{report_data['photo_links']}\n"
+                                , reply_markup=await kb.get_report_keyboard())
+        else:
+            await message.answer("Ошибка при загрузке фото в облако. Пожалуйста, попробуйте ещё раз.")
     else:
         await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
 
@@ -998,7 +1026,7 @@ async def set_asphalt_report(message: Message, state: FSMContext):
 @router.message(Road_devices_steps.characters_number)
 @handle_none_work
 async def set_characters_number(message: Message, state: FSMContext, message_text: str):
-    if re.match(r"\d+\.\d+\s-\s\d+", message_text.replace(" ", "")) or message_text == "":
+    if re.match(r"^\d+\.\d+\s*-\s*\d+$", message_text) or message_text == "":
         await state.update_data(characters_number=message_text)
         await state.set_state(Road_devices_steps.signal_posts_number)
         await message.answer("Напишите количество сигнальных столбиков, установленных за сегодня.", reply_markup=await kb.get_none_work_keyboard())
@@ -1072,20 +1100,23 @@ async def set_road_devices_photo(message: Message, state: FSMContext, bot: Bot):
             file_url = await google_disk.upload_file(f"./bot/media/{file_name}")
             await google_disk.delete_local_file(f"./bot/media/{file_name}")
             files_url.append(file_url)
-        files_url_str = "\n".join(files_url)
+            
+        if files_url:
+            files_url_str = "\n".join(files_url)
+            await state.update_data(photo_links=files_url_str)
 
-        await state.update_data(photo_links=files_url_str)
-
-        report_data = await state.get_data()
-        await message.answer("✅Фото успешно загружены!")
-        await state.set_state(Road_devices_steps.is_ok)
-        await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
-                            f"Смена: {report_data['shift']}\n"
-                            f"Объект: {report_data['project']}\n"
-                            f"Нумерация и количество знаков, установленных за сегодня, в формате 3.24 - 5: {report_data['characters_number']}\n"
-                            f"Другая работа с объемом по обстановке дороги: {report_data['other_works']}\n"
-                            f"Ссылки на фото:\n{report_data['photo_links']}\n"
-                            , reply_markup=await kb.get_report_keyboard())
+            report_data = await state.get_data()
+            await message.answer("✅Фото успешно загружены!")
+            await state.set_state(Road_devices_steps.is_ok)
+            await message.answer(f"Отчету по этапу {report_data['stage']}:\n\n"
+                                f"Смена: {report_data['shift']}\n"
+                                f"Объект: {report_data['project']}\n"
+                                f"Нумерация и количество знаков, установленных за сегодня, в формате 3.24 - 5: {report_data['characters_number']}\n"
+                                f"Другая работа с объемом по обстановке дороги: {report_data['other_works']}\n"
+                                f"Ссылки на фото:\n{report_data['photo_links']}\n"
+                                , reply_markup=await kb.get_report_keyboard())
+        else:
+            await message.answer("Ошибка при загрузке фото в облако. Пожалуйста, попробуйте ещё раз.")
 
     else:
         await message.answer(f"Добавлено {len(data['photo_links'])} из 5 фото. Прикрепите еще {5 - len(data['photo_links'])} фото.")
@@ -1267,7 +1298,7 @@ async def set_add_material_choice(message: Message, state: FSMContext):
     elif message.text == "Перейти к следующему вопросу":
         await state.set_state(Material_consumption_report_steps.is_ok)
         report_data = await state.get_data()
-        await message.answer(f"Отчет по расходу материала на объекте"
+        await message.answer(f"Отчет по расходу материала на объекте\n"
                             f"Смена: {report_data['shift']}\n"
                             f"Объект: {report_data['project']}\n"
                             f"ПГС. Количество тонн: {report_data['pgs_quantity']}\n"
@@ -1297,7 +1328,8 @@ async def save_material_report(message: Message, state: FSMContext):
         await message.answer("ПГС. Укажите количество тонн.", reply_markup=await kb.get_skip_keyboard())
     elif message.text == "Отправить":
         report_data = await state.get_data()
-        if report_data['stage'] == "Подготовительные работы":
+        stage = report_data['stage']
+        if stage == "Подготовительные работы":
             await db.add_preparatory_report(
                 user_id=message.from_user.id,
                 shift=report_data['shift'],
@@ -1327,7 +1359,7 @@ async def save_material_report(message: Message, state: FSMContext):
                 concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
                 other_material=report_data['other_material'],
             )
-        elif report_data['stage'] == "Земляные работы":
+        elif stage == "Земляные работы":
             await db.add_earthworks_report(
                 user_id=message.from_user.id,
                 shift=report_data['shift'],
@@ -1353,7 +1385,7 @@ async def save_material_report(message: Message, state: FSMContext):
                 concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
                 other_material=report_data['other_material'],
             )
-        elif report_data['stage'] == "Искусственные сооружения":
+        elif stage == "Искусственные сооружения":
             await db.add_artificial_structures_report(
                 user_id=message.from_user.id,
                 shift=report_data['shift'],
@@ -1374,7 +1406,7 @@ async def save_material_report(message: Message, state: FSMContext):
                 concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
                 other_material=report_data['other_material'],
             )
-        elif report_data['stage'] == "Дорожная одежда":
+        elif stage == "Дорожная одежда":
             await db.add_road_clothing_report(
                 user_id=message.from_user.id,
                 shift=report_data['shift'],
@@ -1399,7 +1431,7 @@ async def save_material_report(message: Message, state: FSMContext):
                 concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
                 other_material=report_data['other_material'],
             )
-        elif report_data['stage'] == "Асфальт":
+        elif stage == "Асфальт":
             await db.add_asphalt_clothing_report(
                 user_id=message.from_user.id,
                 shift=report_data['shift'],
@@ -1426,7 +1458,7 @@ async def save_material_report(message: Message, state: FSMContext):
                 concrete_mixture_quantity=report_data['concrete_mixture_quantity'],
                 other_material=report_data['other_material'],
             )
-        elif report_data['stage'] == "Дорожные устройства и обстановка дороги":
+        elif stage == "Дорожные устройства и обстановка дороги":
             await db.add_road_devices_report(
                 user_id=message.from_user.id,
                 shift=report_data['shift'],
@@ -1452,7 +1484,7 @@ async def save_material_report(message: Message, state: FSMContext):
         user_fullname = await db.get_fullname(message.from_user.id)
         await google_disk.upload_stage_report(report_data, user_fullname)
         for id in Config.ADMIN_IDS:
-            await message.bot.send_message(id, f"{user_fullname} отправил отчёт")
+            await message.bot.send_message(id, f"{user_fullname} отправил отчёт по этапу {stage}")
         await state.clear()
         await message.answer("Поздравляем! Все отчёты приняты!", reply_markup=await kb.get_main_menu_keyboard())
     else:
@@ -1525,7 +1557,7 @@ async def save_reports(message: Message, state: FSMContext):
         user_fullname = await db.get_fullname(message.from_user.id)
         await google_disk.upload_people_and_equipment_report(report_data, user_fullname)
         for id in Config.ADMIN_IDS:
-            await message.bot.send_message(id, f"{user_fullname} отправил отчёт")
+            await message.bot.send_message(id, f"{user_fullname} отправил отчёт по количеству людей и техники на объекте")
         await state.clear()
         await message.answer("Поздравляем! Отчёт принят!", reply_markup=await kb.get_main_menu_keyboard())
 

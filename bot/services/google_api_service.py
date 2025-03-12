@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.http import MediaFileUpload
 from bot.config import Config
 import pandas as pd
-from bot.database.db import update_all_user_status, update_construction_project, mark_report_as_uploaded, get_not_uploaded_reports
+import bot.db as db
 from datetime import datetime
 import httplib2
 from asyncio import sleep
@@ -61,8 +61,8 @@ async def upload_stage_report(reports_data, user_fullname):
 
         for key in values:
             if values[key] == "":
-                values[key] == "-"
-
+                values[key] = "-"
+        print(values)
         body = {
             'values': [list(values.values())]
         }
@@ -74,7 +74,7 @@ async def upload_stage_report(reports_data, user_fullname):
             body=body
         ).execute()
 
-        await mark_report_as_uploaded(user_data.get("stage", ""), user_data.get("report_date", ""))
+        await db.mark_report_as_uploaded(user_data.get("stage", ""), user_data.get("report_date", ""))
 
     except Exception as error:
         print(f"Ошибка при добавлении данных в Google Таблицу: {error}")
@@ -93,7 +93,7 @@ async def upload_people_and_equipment_report(report_data, user_fullname):
         range_name = f"{sheet_name}!A:Z"
 
         # Удаляем ненужные ключи из report_data
-        keys_to_remove = ["is_ok"]
+        keys_to_remove = ["is_ok", "report"]
         for key in keys_to_remove:
             report_data.pop(key, None)
 
@@ -101,8 +101,8 @@ async def upload_people_and_equipment_report(report_data, user_fullname):
 
         for key in values:
             if values[key] == "":
-                values[key] == "-"
-        
+                values[key] = "-"
+        print(values)
         body = {
                 'values': [list(values.values())]
             }
@@ -113,8 +113,7 @@ async def upload_people_and_equipment_report(report_data, user_fullname):
             valueInputOption='USER_ENTERED',
             body=body
         ).execute()
-
-        await mark_report_as_uploaded(sheet_name, report_data.get("report_date", ""))
+        await db.mark_report_as_uploaded(sheet_name, report_data.get("report_date", ""))
     except Exception as error:
         print(f"Ошибка при добавлении данных в Google Таблицу: {error}")
 
@@ -135,7 +134,7 @@ async def update_users():
         df_employees = pd.DataFrame(values[1:], columns=values[0])
         employees_data = df_employees.to_dict(orient="records")
         
-        await update_all_user_status(employees_data)
+        await db.update_users(employees_data)
 
     except Exception as error:
         print(f"Ошибка при чтении Google Таблицы: {error}")
@@ -157,7 +156,7 @@ async def update_projects():
         df_projects = pd.DataFrame(values[1:], columns=values[0])
         projects_data = df_projects.to_dict(orient="records")
         
-        await update_construction_project(projects_data)
+        await db.update_construction_project(projects_data)
 
     except Exception as error:
         print(f"Ошибка при чтении Google Таблицы: {error}")
@@ -165,7 +164,7 @@ async def update_projects():
 
 async def upload_not_uploaded_reports():
     try:
-        not_uploaded_reports = await get_not_uploaded_reports()
+        not_uploaded_reports = await db.get_not_uploaded_reports()
         if not not_uploaded_reports:
             return
         for report in not_uploaded_reports:
